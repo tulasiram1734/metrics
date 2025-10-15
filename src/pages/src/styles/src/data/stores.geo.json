@@ -1,0 +1,35 @@
+{
+  "type":"FeatureCollection",
+  "features":[
+    {
+      "type":"Feature",
+      "properties":{
+        "store_id":"ATL-007",
+        "store_name":"Atlanta Midtown",
+        "division":"Southern",
+        "dc_id":"DC-041",
+        "country":"USA",
+        "assigned": true,
+        "health": 91,
+        "turnover": 7.4,
+        "return_pct": 0.03
+      },
+      "geometry":{"type":"Point","coordinates":[-84.39,33.75]}
+    },
+    {
+      "type":"Feature",
+      "properties":{
+        "store_id":"BUF-003",
+        "store_name":"Buffalo North",
+        "division":"Northern",
+        "dc_id":"DC-012",
+        "country":"USA",
+        "assigned": false,
+        "health": 68,
+        "turnover": 3.9,
+        "return_pct": 0.06
+      },
+      "geometry":{"type":"Point","coordinates":[-78.878,42.886]}
+    }
+  ]
+}

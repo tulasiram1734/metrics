@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.38798, 33.74899] },
+      "properties": {
+        "store_id": "ATL-007", "store_name": "Atlanta 007",
+        "p_country": "USA", "p_division": "Southern", "dc_id": "DC-ATL",
+        "is_assigned": true, "health": 86, "turnover": 7.1, "return_pct": 0.012
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-77.03653, 38.89768] },
+      "properties": {
+        "store_id": "DC-005", "store_name": "D.C. 005",
+        "p_country": "USA", "p_division": "Eastern", "dc_id": "DC-BAL",
+        "is_assigned": true, "health": 74, "turnover": 6.3, "return_pct": 0.021
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-82.45718, 27.95058] },
+      "properties": {
+        "store_id": "TPA-002", "store_name": "Tampa 002",
+        "p_country": "USA", "p_division": "Southern", "dc_id": "DC-TPA",
+        "is_assigned": true, "health": 62, "turnover": 5.9, "return_pct": 0.017
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-78.63818, 35.77959] },
+      "properties": {
+        "store_id": "RDU-010", "store_name": "Raleigh 010",
+        "p_country": "USA", "p_division": "Eastern", "dc_id": "DC-RDU",
+        "is_assigned": false, "health": 58, "turnover": 5.2, "return_pct": 0.028
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-95.3698, 29.7604] },
+      "properties": {
+        "store_id": "HOU-012", "store_name": "Houston 012",
+        "p_country": "USA", "p_division": "Southern", "dc_id": "DC-HOU",
+        "is_assigned": true, "health": 91, "turnover": 8.2, "return_pct": 0.009
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-71.0589, 42.3601] },
+      "properties": {
+        "store_id": "BOS-004", "store_name": "Boston 004",
+        "p_country": "USA", "p_division": "Northern", "dc_id": "DC-BOS",
+        "is_assigned": true, "health": 67, "turnover": 6.0, "return_pct": 0.016
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-87.6298, 41.8781] },
+      "properties": {
+        "store_id": "CHI-009", "store_name": "Chicago 009",
+        "p_country": "USA", "p_division": "Midwestern", "dc_id": "DC-CHI",
+        "is_assigned": false, "health": 72, "turnover": 6.8, "return_pct": 0.011
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-112.0740, 33.4484] },
+      "properties": {
+        "store_id": "PHX-003", "store_name": "Phoenix 003",
+        "p_country": "USA", "p_division": "Western", "dc_id": "DC-PHX",
+        "is_assigned": true, "health": 83, "turnover": 7.4, "return_pct": 0.014
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-118.2437, 34.0522] },
+      "properties": {
+        "store_id": "LAX-015", "store_name": "Los Angeles 015",
+        "p_country": "USA", "p_division": "Western", "dc_id": "DC-LAX",
+        "is_assigned": false, "health": 55, "turnover": 4.9, "return_pct": 0.032
+      }
+    },
+    { "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.1918, 25.7617] },
+      "properties": {
+        "store_id": "MIA-006", "store_name": "Miami 006",
+        "p_country": "USA", "p_division": "Southern", "dc_id": "DC-MIA",
+        "is_assigned": true, "health": 79, "turnover": 6.6, "return_pct": 0.013
+      }
+    }
+  ]
+}

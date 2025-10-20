@@ -1,0 +1,140 @@
+/* ===========
+   Store Dashboard Layout
+   =========== */
+
+.sd-shell {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  color: #e9f0ff;
+  background: radial-gradient(800px at -10% -20%, rgba(110, 150, 255, 0.08), transparent 60%),
+    linear-gradient(180deg, #0e1530 0%, #0a0f20 100%);
+  overflow: hidden;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial;
+}
+
+/* ---------- Left column ---------- */
+.sd-left {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  bottom: 24px;
+  width: calc(100% - 600px);
+  display: grid;
+  grid-template-rows: auto minmax(340px, 45%) 1fr;
+  gap: 24px;
+}
+
+/* Title */
+.sd-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.sd-id {
+  color: #2bc4ff;
+}
+.sd-period {
+  color: #9cc8ff;
+}
+
+/* PowerCard section */
+.sd-card-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Radar section */
+.sd-radar-section {
+  background: rgba(16, 26, 46, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Right column ---------- */
+.sd-right {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  bottom: 24px;
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Panel card */
+.sd-panel {
+  flex: 1;
+  background: rgba(16, 26, 46, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sd-panel-title {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.sd-panel-content {
+  flex: 1;
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+/* ---------- Navigation ---------- */
+.sd-nav {
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+}
+
+.sd-back {
+  color: #9cc8ff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.sd-back:hover {
+  color: #2bc4ff;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 1100px) {
+  .sd-right {
+    position: relative;
+    width: 100%;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    flex-direction: column;
+    padding-top: 12px;
+  }
+
+  .sd-left {
+    width: 100%;
+    position: relative;
+  }
+
+  .sd-shell {
+    overflow-y: auto;
+  }
+}

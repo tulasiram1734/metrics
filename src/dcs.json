@@ -1,0 +1,13 @@
+{
+  "type":"FeatureCollection",
+  "features":[
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-84.39,33.75]},"properties":{"dc_id":"ATL-DC","name":"Atlanta DC","division":"Southern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-82.46,27.95]},"properties":{"dc_id":"TPA-DC","name":"Tampa DC","division":"Southern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-95.37,29.76]},"properties":{"dc_id":"HOU-DC","name":"Houston DC","division":"Southern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-75.17,39.95]},"properties":{"dc_id":"PHI-DC","name":"Philadelphia DC","division":"Eastern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-71.06,42.36]},"properties":{"dc_id":"BOS-DC","name":"Boston DC","division":"Eastern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-87.63,41.88]},"properties":{"dc_id":"CHI-DC","name":"Chicago DC","division":"Midwestern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-104.99,39.74]},"properties":{"dc_id":"DEN-DC","name":"Denver DC","division":"Northern"}},
+    {"type":"Feature","geometry":{"type":"Point","coordinates":[-122.33,47.61]},"properties":{"dc_id":"SEA-DC","name":"Seattle DC","division":"Northern"}}
+  ]
+}

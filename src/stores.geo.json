@@ -1,19 +1,26 @@
 {
   "type": "FeatureCollection",
   "features": [
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-84.388,33.749]},"properties":{"store_id":"ATL-007","store_name":"Atlanta Midtown","division":"Southern","dc_id":"ATL-DC","health":84,"turnover":8.4,"return_pct":0.02}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-82.457,27.950]},"properties":{"store_id":"TPA-002","store_name":"Tampa Central","division":"Southern","dc_id":"TPA-DC","health":73,"turnover":7.1,"return_pct":0.03}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-75.165,39.952]},"properties":{"store_id":"PHI-012","store_name":"Philadelphia East","division":"Eastern","dc_id":"PHI-DC","health":67,"turnover":6.2,"return_pct":0.04}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-78.638,35.779]},"properties":{"store_id":"RAL-004","store_name":"Raleigh North","division":"Eastern","dc_id":"RDU-DC","health":81,"turnover":7.9,"return_pct":0.01}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-87.629,41.878]},"properties":{"store_id":"CHI-015","store_name":"Chicago West","division":"Midwestern","dc_id":"CHI-DC","health":91,"turnover":9.2,"return_pct":0.01}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-83.045,42.331]},"properties":{"store_id":"DET-008","store_name":"Detroit Central","division":"Midwestern","dc_id":"DET-DC","health":58,"turnover":5.4,"return_pct":0.05}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-76.612,39.290]},"properties":{"store_id":"BAL-005","store_name":"Baltimore Harbor","division":"Eastern","dc_id":"BAL-DC","health":88,"turnover":8.3,"return_pct":0.02}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-95.357,29.480]},"properties":{"store_id":"HOU-007","store_name":"Houston South","division":"Southern","dc_id":"HOU-DC","health":82,"turnover":8.6,"return_pct":0.02}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-122.676,45.523]},"properties":{"store_id":"PDX-001","store_name":"Portland","division":"Northern","dc_id":"SEA-DC","health":76,"turnover":7.0,"return_pct":0.03}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-122.332,47.606]},"properties":{"store_id":"SEA-009","store_name":"Seattle Ballard","division":"Northern","dc_id":"SEA-DC","health":65,"turnover":6.1,"return_pct":0.04}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-104.990,39.739]},"properties":{"store_id":"DEN-010","store_name":"Denver Central","division":"Northern","dc_id":"DEN-DC","health":86,"turnover":8.1,"return_pct":0.02}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-71.058,42.360]},"properties":{"store_id":"BOS-003","store_name":"Boston North","division":"Eastern","dc_id":"BOS-DC","health":79,"turnover":7.2,"return_pct":0.03}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-90.199,38.627]},"properties":{"store_id":"STL-006","store_name":"St. Louis","division":"Midwestern","dc_id":"STL-DC","health":62,"turnover":6.0,"return_pct":0.04}},
-    { "type":"Feature","geometry":{"type":"Point","coordinates":[-81.655,30.332]},"properties":{"store_id":"JAX-011","store_name":"Jacksonville","division":"Southern","dc_id":"JAX-DC","health":55,"turnover":5.3,"return_pct":0.05}}
+    { "type":"Feature","properties": { "store_id":"ATL-007","store_name":"Atlanta 7","division":"Southern","dc":"ATL-DC","assigned":true,"health":86,"turnover":7.8,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-84.3900,33.7500]}},
+    { "type":"Feature","properties": { "store_id":"ATL-015","store_name":"Atlanta 15","division":"Southern","dc":"ATL-DC","assigned":true,"health":62,"turnover":6.1,"return_pct":0.05 }, "geometry":{"type":"Point","coordinates":[-84.29,33.84]}},
+    { "type":"Feature","properties": { "store_id":"MIA-004","store_name":"Miami 4","division":"Southern","dc":"MIA-DC","assigned":false,"health":58,"turnover":5.6,"return_pct":0.06 }, "geometry":{"type":"Point","coordinates":[-80.1918,25.7617]}},
+    { "type":"Feature","properties": { "store_id":"DAL-009","store_name":"Dallas 9","division":"Southern","dc":"DAL-DC","assigned":true,"health":74,"turnover":6.9,"return_pct":0.04 }, "geometry":{"type":"Point","coordinates":[-96.8,32.78]}},
+    { "type":"Feature","properties": { "store_id":"HOU-007","store_name":"Houston 7","division":"Southern","dc":"DAL-DC","assigned":false,"health":84,"turnover":7.2,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-95.37,29.76]}},
+
+    { "type":"Feature","properties": { "store_id":"CHI-021","store_name":"Chicago 21","division":"Midwestern","dc":"CHI-DC","assigned":true,"health":79,"turnover":7.0,"return_pct":0.02 }, "geometry":{"type":"Point","coordinates":[-87.63,41.88]}},
+    { "type":"Feature","properties": { "store_id":"DET-003","store_name":"Detroit 3","division":"Midwestern","dc":"CHI-DC","assigned":false,"health":64,"turnover":6.3,"return_pct":0.04 }, "geometry":{"type":"Point","coordinates":[-83.05,42.33]}},
+    { "type":"Feature","properties": { "store_id":"STL-008","store_name":"St Louis 8","division":"Midwestern","dc":"CHI-DC","assigned":false,"health":55,"turnover":5.8,"return_pct":0.07 }, "geometry":{"type":"Point","coordinates":[-90.2,38.62]}},
+
+    { "type":"Feature","properties": { "store_id":"NYC-012","store_name":"New York 12","division":"Eastern","dc":"BOS-DC","assigned":true,"health":82,"turnover":8.2,"return_pct":0.02 }, "geometry":{"type":"Point","coordinates":[-73.9851,40.7587]}},
+    { "type":"Feature","properties": { "store_id":"BOS-006","store_name":"Boston 6","division":"Eastern","dc":"BOS-DC","assigned":false,"health":67,"turnover":6.7,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-71.06,42.36]}},
+    { "type":"Feature","properties": { "store_id":"PHI-012","store_name":"Philadelphia 12","division":"Eastern","dc":"BOS-DC","assigned":false,"health":59,"turnover":5.9,"return_pct":0.05 }, "geometry":{"type":"Point","coordinates":[-75.1652,39.9526]}},
+
+    { "type":"Feature","properties": { "store_id":"SEA-003","store_name":"Seattle 3","division":"Northern","dc":"SEA-DC","assigned":true,"health":77,"turnover":6.6,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-122.33,47.60]}},
+    { "type":"Feature","properties": { "store_id":"MSP-002","store_name":"Minneapolis 2","division":"Northern","dc":"CHI-DC","assigned":false,"health":69,"turnover":6.8,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-93.265,44.9778]}},
+    { "type":"Feature","properties": { "store_id":"BIL-001","store_name":"Billings 1","division":"Northern","dc":"DEN-DC","assigned":false,"health":61,"turnover":5.9,"return_pct":0.05 }, "geometry":{"type":"Point","coordinates":[-108.5,45.78]}},
+
+    { "type":"Feature","properties": { "store_id":"DEN-004","store_name":"Denver 4","division":"Midwestern","dc":"DEN-DC","assigned":true,"health":88,"turnover":7.6,"return_pct":0.02 }, "geometry":{"type":"Point","coordinates":[-104.99,39.74]}},
+    { "type":"Feature","properties": { "store_id":"PHX-010","store_name":"Phoenix 10","division":"Southern","dc":"LAS-DC","assigned":false,"health":63,"turnover":6.1,"return_pct":0.03 }, "geometry":{"type":"Point","coordinates":[-112.07,33.45]}},
+    { "type":"Feature","properties": { "store_id":"LV-005","store_name":"Las Vegas 5","division":"Southern","dc":"LAS-DC","assigned":false,"health":72,"turnover":6.9,"return_pct":0.04 }, "geometry":{"type":"Point","coordinates":[-115.14,36.17]}}
   ]
 }

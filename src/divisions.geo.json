@@ -1,1 +1,22 @@
-{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-104, 49.4], [-95, 49.4], [-84, 48.6], [-78, 46.5], [-74, 45.5], [-73, 44.0], [-75, 43.0], [-83, 43.5], [-90, 43.5], [-96, 46.0], [-104, 46.5], [-108, 48.5], [-104, 49.4]]]}, "properties": {"name": "Northern"}}, {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-106, 36.7], [-103, 31.0], [-97, 25.9], [-83, 24.5], [-80, 26.5], [-80.5, 30.8], [-82.5, 33.0], [-86.5, 35.0], [-93.0, 36.5], [-99.0, 36.7], [-106, 36.7]]]}, "properties": {"name": "Southern"}}, {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-82.5, 44.5], [-78.5, 45.5], [-71.0, 45.5], [-67.0, 44.0], [-66.0, 41.0], [-74.0, 38.5], [-80.0, 36.0], [-82.5, 37.5], [-82.5, 44.5]]]}, "properties": {"name": "Eastern"}}, {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[-104, 45.5], [-96.0, 45.5], [-88.0, 45.0], [-85.0, 43.8], [-86.0, 41.0], [-90.0, 39.5], [-96.0, 38.5], [-103.0, 40.0], [-104, 45.5]]]}, "properties": {"name": "Midwestern"}}]}
+{
+  "type":"FeatureCollection",
+  "features":[
+    { "type":"Feature","properties":{"name":"Northern"},
+      "geometry":{"type":"Polygon","coordinates":[[
+        [-125, 42], [-100, 42], [-95, 49.5], [-125, 49.5], [-125, 42]
+      ]]}},
+    { "type":"Feature","properties":{"name":"Southern"},
+      "geometry":{"type":"Polygon","coordinates":[[
+        [-125, 24.4], [-80, 24.4], [-80, 35], [-100, 35], [-125, 35], [-125, 24.4]
+      ]]}},
+    { "type":"Feature","properties":{"name":"Eastern"},
+      "geometry":{"type":"Polygon","coordinates":[[
+        [-80, 32], [-66.7, 32], [-66.7, 49.5], [-80, 49.5], [-80, 32]
+      ]]}}
+    ,
+    { "type":"Feature","properties":{"name":"Midwestern"},
+      "geometry":{"type":"Polygon","coordinates":[[
+        [-100, 35], [-80, 35], [-80, 49.5], [-95, 49.5], [-100, 42], [-100, 35]
+      ]]}}
+  ]
+}

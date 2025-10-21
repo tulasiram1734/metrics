@@ -1,97 +1,66 @@
-.home-shell {
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  color: #e9f0ff;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;
-  background: radial-gradient(60vw 60vh at 50% 40%, rgba(16,20,40,.35), rgba(10,14,25,.92)), #0b1220;
+.home-shell { position:relative; height:100vh; color:#e9f0ff; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+
+.mapbox {
+  position:absolute; top:60px; left:0; right:0; bottom:0;
+  width:100%; height:calc(100vh - 60px);
 }
 
-/* Header */
+/* Top bar */
 .home-header {
-  position: absolute;
-  top: 10px; left: 10px; right: 10px;
-  height: 42px;
-  display: flex; align-items: center; justify-content: space-between;
-  z-index: 3;
+  position:absolute; top:0; left:0; right:0; height:60px; z-index:3;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; background:linear-gradient(180deg, rgba(8,18,36,.85), rgba(8,18,36,.35));
+  border-bottom:1px solid rgba(255,255,255,.06);
 }
 
-.brand {
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(255,255,255,.06);
-  padding: 6px 12px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.08);
-  letter-spacing: .3px; font-weight: 600;
-}
+.brand { display:flex; align-items:center; gap:8px; letter-spacing:.3px; font-weight:600; }
+.pulse-dot { width:8px; height:8px; border-radius:50%; background:#2bc4ff; display:inline-block; }
 
-.pulse-dot { width: 8px; height: 8px; border-radius: 50%; display:inline-block; background:#2bc4ff; }
-
-/* Filters Panel */
+/* Filters panel */
 .filters {
-  position: absolute;
-  top: 70px; left: 16px; width: 420px; z-index: 3;
-  background: rgba(26,32,55,.65);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 14px; padding: 12px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05);
+  position:absolute; top:76px; left:16px; width:420px; z-index:3;
+  background:rgba(16,28,46,.55); border:1px solid rgba(255,255,255,.08);
+  padding:12px; border-radius:14px; backdrop-filter: blur(6px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
 }
 
-.filters label { display:block; font-size: 12px; opacity: .85; margin: 6px 0; }
-.filters .pills { display:flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.filters_group { margin-bottom:10px; }
+.filters_group > label { font-size:12px; opacity:.85; display:block; margin-bottom:6px; }
 
+.filters_pills { display:flex; flex-wrap:wrap; gap:6px; }
 .pill {
-  background: rgba(255,255,255,.06); color:#e9f0ff;
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 999px; padding: 6px 10px; font-size: 12px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+  color:#e9f0ff; border-radius:9999px; padding:6px 10px; font-size:12px;
 }
-.pill.is-active { background:#102a5f; border-color: rgba(33,160,255,.35); box-shadow: 0 0 0 1px rgba(33,160,255,.15) inset; }
+.pill.is-active { background:#0f2a5f; border-color:rgba(33,160,255,.35); color:#e9f0ff; }
 
 .filters select {
-  width: 100%; background: rgba(255,255,255,.06); color:#e9f0ff;
-  border: 1px solid rgba(255,255,255,.18); border-radius: 10px;
-  padding: 8px 10px;
+  width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+  color:#e9f0ff; border-radius:10px; padding:8px 10px;
 }
 
-.filters .chk { display:flex; align-items:center; gap:8px; margin-top:10px; opacity:.9; }
-
-/* Map container */
-.map-container { position: absolute; inset: 0; }
+.chk { display:flex; align-items:center; gap:8px; font-size:12px; opacity:.9; }
 
 /* Legend */
 .legend {
-  position: absolute; bottom: 16px; left: 16px; z-index: 3;
-  background: rgba(26,32,55,.65);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 12px; padding: 8px 12px; gap: 14px; display:flex; align-items:center;
-  font-size: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05);
+  position:absolute; bottom:16px; left:16px; z-index:3;
+  background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.08);
+  border-radius:12px; padding:8px 12px; display:flex; gap:16px; font-size:12px;
+  align-items:center;
 }
+.legend .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+.legend .green { background:#28F7A0; box-shadow:0 0 18px rgba(40,247,160,.55); }
+.legend .orange { background:#FFB54C; box-shadow:0 0 18px rgba(255,181,76,.45); }
+.legend .red { background:#FF5A72; box-shadow:0 0 18px rgba(255,90,114,.45); }
 
-.legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin: 0 6px 0 2px; }
-.legend .green { background: #2BFFA0; box-shadow: 0 0 14px #2BFFA0; }
-.legend .amber { background: #FFB454; box-shadow: 0 0 14px #FFB454; }
-.legend .red { background: #FF5A72; box-shadow: 0 0 14px #FF5A72; }
-
-/* Tooltip (custom popup) */
-.mapboxgl-popup.pulse-tt { z-index: 5; }
-.mapboxgl-popup.pulse-tt .mapboxgl-popup-content {
-  background: linear-gradient(135deg, rgba(18,24,44,.95), rgba(12,16,32,.95));
-  color: #e9f0ff; border: 1px solid rgba(33,160,255,.25);
-  border-radius: 12px; padding: 10px 12px; box-shadow: 0 12px 28px rgba(0,0,0,.45);
+/* Tooltip (Popup) */
+.mapboxgl-popup.pulse-map-tt { z-index:4; }
+.mapboxgl-popup-content {
+  background:linear-gradient(145deg, rgba(12,20,36,.92), rgba(10,16,30,.92));
+  color:#e9f0ff; border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:10px 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 1px rgba(255,255,255,.04);
 }
-.mapboxgl-popup.pulse-tt .mapboxgl-popup-tip {
-  border-top-color: rgba(12,16,32,.95) !important;
-  border-bottom-color: rgba(12,16,32,.95) !important;
-}
-.tt { min-width: 220px; }
-.tt-title { display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; margin-bottom:6px; }
-.tt-dot { width:10px; height:10px; border-radius:50%; display:inline-block; box-shadow: 0 0 10px currentColor; }
-.tt-line { display:flex; justify-content:space-between; gap:10px; font-size:12px; opacity:.95; }
-.tt-line span { opacity:.8; }
-.tt-foot { margin-top:6px; text-align:right; font-size:11px; opacity:.6; }
-
-/* Mapbox attribution – push to unobtrusive dark */
-.mapboxgl-ctrl-bottom-right, .mapboxgl-ctrl-bottom-left {
-  filter: brightness(.85) saturate(.9);
-}
+.tt-title { display:flex; justify-content:space-between; gap:10px; margin-bottom:6px; font-weight:600; }
+.tt-id { color:#a9c9ff; font-weight:500; }
+.tt-line { display:flex; justify-content:space-between; gap:10px; margin-top:4px; }
+.tt-line span { opacity:.85; }

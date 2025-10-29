@@ -294,3 +294,4 @@ function fitToFeature(map, feature) {
   map.easeTo({ pitch: 26, bearing: 8, duration: 360 });
   map.fitBounds(bounds, { padding: 70, maxZoom: 6.8, duration: 720 });
 }
+ 

@@ -1,13 +1,58 @@
 {
-  "type":"FeatureCollection",
-  "features":[
-    { "type":"Feature","properties":{"kind":"division","division":"Eastern"},
-      "geometry":{"type":"Polygon","coordinates":[[[-84.9,24.5],[-84.9,47.5],[-66.9,47.5],[-66.9,24.5],[-84.9,24.5]]]}},
-    { "type":"Feature","properties":{"kind":"division","division":"Southern"},
-      "geometry":{"type":"Polygon","coordinates":[[[-106.7,24.0],[-106.7,37.5],[-80.0,37.5],[-80.0,24.0],[-106.7,24.0]]]}},
-    { "type":"Feature","properties":{"kind":"division","division":"Northern"},
-      "geometry":{"type":"Polygon","coordinates":[[[-124.6,44.0],[-124.6,49.5],[-67.0,49.5],[-67.0,44.0],[-124.6,44.0]]]}},
-    { "type":"Feature","properties":{"kind":"division","division":"Midwestern"},
-      "geometry":{"type":"Polygon","coordinates":[[[-106.7,36.5],[-106.7,49.5],[-82.0,49.5],[-82.0,36.5],[-106.7,36.5]]]}}
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "Division", "division": "Northern" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-125, 49], [-66, 49], [-66, 42], [-125, 42], [-125, 49]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "Division", "division": "Midwestern" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-104, 46], [-80, 46], [-80, 36.5], [-104, 36.5], [-104, 46]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "Division", "division": "Eastern" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-80, 44], [-66, 44], [-66, 31], [-80, 31], [-80, 44]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "Division", "division": "Southern" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-125, 36.5], [-66, 36.5], [-66, 25], [-125, 25], [-125, 36.5]
+        ]]
+      }
+    },
+
+    /* ---- State polygon so ATL-DC framing looks perfect ---- */
+    {
+      "type": "Feature",
+      "properties": { "type": "State", "division": "Southern", "state": "GA" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-85.61, 35.00], [-80.75, 35.00], [-80.75, 30.36],
+          [-85.61, 30.36], [-85.61, 35.00]
+        ]]
+      }
+    }
   ]
 }

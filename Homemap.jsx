@@ -1,64 +1,68 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useNavigate } from 'react-router-dom';
+
+// IMPORTANT: mapbox CSS (prevents invisible canvas / popup glitches)
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 import storesGeo from '../data/stores.geo.json';
 import regionsGeo from '../data/regions.geo.json';
 import '../styles/HomeMap.css';
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN; // keep your .env
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN; // keep in .env
 
-// UI divisions
-const DIVISIONS = ['All','Northern','Southern','Eastern','Midwestern'];
+// UI pills
+const DIVISIONS = ['All', 'Northern', 'Southern', 'Eastern', 'Midwestern'];
 
-// hard US bounds – keeps us off the globe
+// hard USA bounds (keeps us off the globe)
 const US_BOUNDS = [
   [-127.0, 23.0], // SW
   [-65.0, 50.0],  // NE
 ];
 
-// health → neon color
-function healthToColor(h=0){
-  if (h>=80) return '#28FFA0';
-  if (h>=60) return '#FFAB54';
-  return '#FF5A72';
+function healthToColor(h = 0) {
+  if (h >= 80) return '#28FFA0'; // neon green
+  if (h >= 60) return '#FFAB54'; // neon amber
+  return '#FF5A72';              // neon red
 }
 
-export default function HomeMap(){
+export default function HomeMap() {
+  const containerRef = useRef(null);
   const mapRef = useRef(null);
-  const mapReady = useRef(false);          // <- critical: don’t touch style until ready
+  const styleReady = useRef(false); // gate all source/layer ops
   const navigate = useNavigate();
 
   // filters
-  const [division, setDivision]   = useState('All');     // All | Northern | …
-  const [dcId, setDcId]           = useState('ALL');     // ALL or a DC id string
+  const [division, setDivision] = useState('All');
+  const [dcId, setDcId] = useState('ALL');
   const [onlyAssigned, setOnlyAssigned] = useState(false);
 
-  // filtered store features
+  // derived stores by filters
   const filteredStores = useMemo(() => {
-    const feats = storesGeo.features.filter(f=>{
+    const feats = storesGeo.features.filter(f => {
       const p = f.properties;
       if (p.country !== 'USA') return false;
       if (division !== 'All' && p.division !== division) return false;
-      if (dcId !== 'ALL' && p.dc_id !== dcId) return false;
       if (onlyAssigned && !p.assigned) return false;
+      if (dcId !== 'ALL' && p.dc_id !== dcId) return false;
       return true;
     });
-    return {type:'FeatureCollection', features:feats};
+    return { type: 'FeatureCollection', features: feats };
   }, [division, dcId, onlyAssigned]);
 
-  // DC options for the current division
-  const dcOptions = useMemo(()=>{
+  // DC list for current filter
+  const dcOptions = useMemo(() => {
     const s = new Set();
-    filteredStores.features.forEach(f=> s.add(f.properties.dc_id));
+    filteredStores.features.forEach(f => s.add(f.properties.dc_id));
     return ['ALL', ...Array.from(s).sort()];
   }, [filteredStores]);
 
-  // ---- init map once ----
+  // INIT MAP exactly once
   useEffect(() => {
-    if (mapRef.current) return;
+    if (!containerRef.current || mapRef.current) return;
 
     const map = new mapboxgl.Map({
-      container: 'map-root',
+      container: containerRef.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       projection: 'mercator',
       center: [-98.5, 38.0],
@@ -68,53 +72,53 @@ export default function HomeMap(){
       attributionControl: false
     });
 
-    // keep in the US, disable world wrap/globe
+    // USA only
     map.setMaxBounds(US_BOUNDS);
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
 
     map.on('load', () => {
-      mapReady.current = true;
+      styleReady.current = true;
 
-      // --- sources ---
-      map.addSource('regions', { type:'geojson', data: regionsGeo });
-      map.addSource('stores',  { type:'geojson', data: filteredStores });
+      // sources
+      map.addSource('regions', { type: 'geojson', data: regionsGeo });
+      map.addSource('stores', { type: 'geojson', data: filteredStores });
 
-      // --- region outline (invisible by default; shown on highlight) ---
+      // region outline (hidden initially)
       map.addLayer({
-        id:'region-outline',
-        type:'line',
-        source:'regions',
-        paint:{
-          'line-color':'#2BC4FF',
-          'line-width':2.5,
-          'line-opacity':0.0
+        id: 'region-outline',
+        type: 'line',
+        source: 'regions',
+        paint: {
+          'line-color': '#2BC4FF',
+          'line-width': 2.4,
+          'line-opacity': 0.0
         }
       });
 
-      // subtle fill-extrusion glow (appears on highlight)
+      // subtle 3D glow using fill-extrusion
       map.addLayer({
-        id:'region-extrude',
-        type:'fill-extrusion',
-        source:'regions',
-        paint:{
-          'fill-extrusion-color':'#2BC4FF',
-          'fill-extrusion-height': 2000,      // thin wall
+        id: 'region-extrude',
+        type: 'fill-extrusion',
+        source: 'regions',
+        paint: {
+          'fill-extrusion-color': '#2BC4FF',
+          'fill-extrusion-height': 1800,
           'fill-extrusion-opacity': 0.0
         }
       });
 
-      // --- store dots: glow ---
+      // stores glow
       map.addLayer({
-        id:'stores-glow',
-        type:'circle',
-        source:'stores',
-        paint:{
-          'circle-radius': ['interpolate',['linear'],['zoom'],   1,3,  4,6,  6,7.5,  12,10,  14,13],
+        id: 'stores-glow',
+        type: 'circle',
+        source: 'stores',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 3, 4, 6, 8, 8, 12, 11, 14, 13],
           'circle-color': [
             'case',
-            ['>=',['get','health'],80], '#28FFA0',
-            ['>=',['get','health'],60], '#FFAB54',
+            ['>=', ['get', 'health'], 80], '#28FFA0',
+            ['>=', ['get', 'health'], 60], '#FFAB54',
             '#FF5A72'
           ],
           'circle-opacity': 0.85,
@@ -122,17 +126,17 @@ export default function HomeMap(){
         }
       });
 
-      // --- store dots: core ---
+      // stores core
       map.addLayer({
-        id:'stores-core',
-        type:'circle',
-        source:'stores',
-        paint:{
-          'circle-radius': ['interpolate',['linear'],['zoom'], 1,1.8, 3,2.2, 6,3.2, 12,4.5, 14,6.2],
+        id: 'stores-core',
+        type: 'circle',
+        source: 'stores',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.7, 4, 2.2, 8, 3.3, 12, 4.5, 14, 6.2],
           'circle-color': [
             'case',
-            ['>=',['get','health'],80], '#28FFA0',
-            ['>=',['get','health'],60], '#FFAB54',
+            ['>=', ['get', 'health'], 80], '#28FFA0',
+            ['>=', ['get', 'health'], 60], '#FFAB54',
             '#FF5A72'
           ],
           'circle-opacity': 1.0
@@ -140,12 +144,12 @@ export default function HomeMap(){
       });
 
       // cursor
-      map.on('mouseenter','stores-core', ()=> map.getCanvas().style.cursor='pointer');
-      map.on('mouseleave','stores-core', ()=> map.getCanvas().style.cursor='');
+      map.on('mouseenter', 'stores-core', () => map.getCanvas().style.cursor = 'pointer');
+      map.on('mouseleave', 'stores-core', () => map.getCanvas().style.cursor = '');
 
-      // tooltip (dark)
-      const popup = new mapboxgl.Popup({closeButton:false, closeOnClick:false, offset:[0,-10], className:'tt'});
-      map.on('mousemove','stores-core', (e)=>{
+      // dark tooltip
+      const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: [0, -10], className: 'tt' });
+      map.on('mousemove', 'stores-core', (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const p = f.properties;
@@ -154,142 +158,137 @@ export default function HomeMap(){
           .setHTML(`
             <div class="tt-wrap">
               <div class="tt-title"><b>${p.store_name}</b> <span class="tt-id">#${p.store_id}</span></div>
+              <div class="tt-line"><span>Division</span><b>${p.division}</b></div>
               <div class="tt-line"><span>Health</span><b>${Math.round(p.health)}</b></div>
-              <div class="tt-line"><span>Turnover</span><b>${(p.turnover??0).toFixed(1)}%</b></div>
-              <div class="tt-line"><span>Returns</span><b>${p.return_pct!=null?(p.return_pct*100).toFixed(1)+'%':'-'}</b></div>
+              <div class="tt-line"><span>Turnover</span><b>${(p.turnover ?? 0).toFixed(1)}%</b></div>
             </div>
           `)
           .addTo(map);
       });
-      map.on('mouseleave','stores-core', ()=> popup.remove());
+      map.on('mouseleave', 'stores-core', () => popup.remove());
 
-      // click → navigate
-      map.on('click','stores-core',(e)=>{
+      // click → store dashboard
+      map.on('click', 'stores-core', (e) => {
         const f = e.features?.[0];
         if (!f) return;
         navigate(`/store/${f.properties.store_id}`);
       });
 
-      // initial focus
+      // first fit
       fitToCurrent(map, filteredStores, division, dcId);
     });
 
     mapRef.current = map;
     return () => map.remove();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---- update source data when filters change ----
+  // update on filters/data
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady.current) return;
+    if (!map || !styleReady.current) return;
 
     const src = map.getSource('stores');
     if (src && 'setData' in src) src.setData(filteredStores);
 
-    // update region highlight + camera
     highlightRegion(map, division, dcId);
     fitToCurrent(map, filteredStores, division, dcId);
   }, [filteredStores, division, dcId]);
 
-  // helpers
-  function highlightRegion(map, div, dc){
-    if (!mapReady.current) return;
+  // ---- helpers ----
+  function highlightRegion(map, div, dc) {
+    if (!styleReady.current) return;
 
-    // start hidden
-    map.setPaintProperty('region-outline','line-opacity',0.0);
-    map.setPaintProperty('region-extrude','fill-extrusion-opacity',0.0);
+    // hide
+    map.setPaintProperty('region-outline', 'line-opacity', 0.0);
+    map.setPaintProperty('region-extrude', 'fill-extrusion-opacity', 0.0);
 
-    // show the selected division polygon
-    if (div !== 'All'){
-      map.setFilter('region-outline', ['all',['==',['get','type'],'Division'],['==',['get','division'],div]]);
-      map.setFilter('region-extrude', ['all',['==',['get','type'],'Division'],['==',['get','division'],div]]);
-      map.setPaintProperty('region-outline','line-opacity',0.85);
-      map.setPaintProperty('region-extrude','fill-extrusion-opacity',0.14);
+    if (dc !== 'ALL') {
+      map.setFilter('region-outline', ['all', ['==', ['get', 'type'], 'DC'], ['==', ['get', 'dc_id'], dc]]);
+      map.setFilter('region-extrude', ['all', ['==', ['get', 'type'], 'DC'], ['==', ['get', 'dc_id'], dc]]);
+      map.setPaintProperty('region-outline', 'line-opacity', 0.95);
+      map.setPaintProperty('region-extrude', 'fill-extrusion-opacity', 0.18);
+      return;
     }
-
-    // show DC polygon if chosen
-    if (dc !== 'ALL'){
-      map.setFilter('region-outline', ['all',['==',['get','type'],'DC'],['==',['get','dc_id'],dc]]);
-      map.setFilter('region-extrude', ['all',['==',['get','type'],'DC'],['==',['get','dc_id'],dc]]);
-      map.setPaintProperty('region-outline','line-opacity',0.95);
-      map.setPaintProperty('region-extrude','fill-extrusion-opacity',0.18);
+    if (div !== 'All') {
+      map.setFilter('region-outline', ['all', ['==', ['get', 'type'], 'Division'], ['==', ['get', 'division'], div]]);
+      map.setFilter('region-extrude', ['all', ['==', ['get', 'type'], 'Division'], ['==', ['get', 'division'], div]]);
+      map.setPaintProperty('region-outline', 'line-opacity', 0.85);
+      map.setPaintProperty('region-extrude', 'fill-extrusion-opacity', 0.14);
     }
   }
 
-  function fitToCurrent(map, storesFC, div, dc){
-    if (!mapReady.current) return;
+  function fitToCurrent(map, storesFC, div, dc) {
+    if (!styleReady.current) return;
 
     // DC focus
-    if (dc !== 'ALL'){
-      const hit = regionsGeo.features.find(f => f.properties.type==='DC' && f.properties.dc_id===dc);
-      if (hit){
+    if (dc !== 'ALL') {
+      const hit = regionsGeo.features.find(f => f.properties.type === 'DC' && f.properties.dc_id === dc);
+      if (hit) {
         const b = new mapboxgl.LngLatBounds();
-        hit.geometry.coordinates[0].forEach(([lng,lat]) => b.extend([lng,lat]));
-        map.fitBounds(b, {padding:60, curve:1.4, speed:0.8, pitch:35, bearing:15, duration:700});
+        hit.geometry.coordinates[0].forEach(([lng, lat]) => b.extend([lng, lat]));
+        map.fitBounds(b, { padding: 60, curve: 1.4, speed: 0.8, pitch: 35, bearing: 16, duration: 700, essential: true });
         return;
       }
     }
-
     // Division focus
-    if (div !== 'All'){
-      const hit = regionsGeo.features.find(f => f.properties.type==='Division' && f.properties.division===div);
-      if (hit){
+    if (div !== 'All') {
+      const hit = regionsGeo.features.find(f => f.properties.type === 'Division' && f.properties.division === div);
+      if (hit) {
         const b = new mapboxgl.LngLatBounds();
-        hit.geometry.coordinates[0].forEach(([lng,lat]) => b.extend([lng,lat]));
-        map.fitBounds(b, {padding:60, curve:1.3, speed:0.8, pitch:25, bearing:8, duration:650});
+        hit.geometry.coordinates[0].forEach(([lng, lat]) => b.extend([lng, lat]));
+        map.fitBounds(b, { padding: 60, curve: 1.3, speed: 0.8, pitch: 25, bearing: 8, duration: 650, essential: true });
         return;
       }
     }
-
-    // default: fit stores
-    if (storesFC.features.length){
+    // Default: stores extent (or US)
+    if (storesFC.features.length) {
       const b = new mapboxgl.LngLatBounds();
-      storesFC.features.forEach(f=>b.extend(f.geometry.coordinates));
-      map.fitBounds(b, {padding:60, maxZoom:5.5, duration:600});
-    }else{
-      map.fitBounds(US_BOUNDS, {padding:50, duration:500});
+      storesFC.features.forEach(f => b.extend(f.geometry.coordinates));
+      map.fitBounds(b, { padding: 60, maxZoom: 5.5, duration: 600, essential: true });
+    } else {
+      map.fitBounds(US_BOUNDS, { padding: 50, duration: 500, essential: true });
     }
   }
 
-  // UI
+  // ---- UI ----
   return (
     <div className="home-shell">
-      {/* Top bar (kept like before) */}
+      {/* header */}
       <div className="home-header">
-        <div className="brand"><span className="pulse-dot"/> <span>Pulse · Inventory Insights</span></div>
+        <div className="brand"><span className="pulse-dot" /> <span>Pulse · Inventory Insights</span></div>
       </div>
 
-      {/* Filters */}
+      {/* filters card */}
       <div className="filters">
         <label>Division</label>
         <div className="pills">
-          {DIVISIONS.map(d=>(
-            <button key={d}
-              className={division===d ? 'is-active':''}
-              onClick={()=> setDivision(d)}>{d}</button>
+          {DIVISIONS.map(d => (
+            <button key={d} className={division === d ? 'is-active' : ''} onClick={() => setDivision(d)}>
+              {d}
+            </button>
           ))}
         </div>
 
         <label>Distribution Center</label>
-        <select value={dcId} onChange={e=> setDcId(e.target.value)}>
-          {dcOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        <select value={dcId} onChange={e => setDcId(e.target.value)}>
+          {dcOptions.map(x => <option key={x} value={x}>{x}</option>)}
         </select>
 
         <label className="chk">
-          <input type="checkbox" checked={onlyAssigned} onChange={e=>setOnlyAssigned(e.target.checked)}/>
+          <input type="checkbox" checked={onlyAssigned} onChange={e => setOnlyAssigned(e.target.checked)} />
           Show only my assigned stores
         </label>
       </div>
 
-      {/* Map container */}
-      <div id="map-root" className="mapbox"/>
+      {/* map */}
+      <div ref={containerRef} className="mapbox" />
 
-      {/* Legend */}
+      {/* legend */}
       <div className="legend">
-        <span className="dot green"/> Healthy (80–100)
-        <span className="dot orange"/> Watch (60–79)
-        <span className="dot red"/> At Risk (&lt;60)
+        <span className="dot green" /> Healthy (80–100)
+        <span className="dot orange" /> Watch (60–79)
+        <span className="dot red" /> At Risk (&lt;60)
       </div>
     </div>
   );

@@ -2,8 +2,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useNavigate } from 'react-router-dom';
-
-// IMPORTANT: keep this import here so the canvas is styled properly
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '../styles/HomeMap.css';
 
@@ -12,15 +10,11 @@ import regionsGeo from '../data/regions.geo.json';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
-// US bounds (lon/lat)
-const US_BOUNDS = [
-  [-125.0011, 24.9493],
-  [-66.9326, 49.5904]
-];
-
 const DIVISIONS = ['All', 'Northern', 'Southern', 'Eastern', 'Midwestern'];
 
-const healthToColor = (h) => (h >= 80 ? '#28FFA0' : h >= 60 ? '#FF5A4C' : '#FF5A72');
+const US_CENTER = [-96.9, 38.5];
+
+const colorForHealth = (h) => (h >= 80 ? '#00FFC6' : h >= 60 ? '#FFC14D' : '#FF2E63');
 
 export default function HomeMap() {
   const mapRef = useRef(null);
@@ -32,7 +26,7 @@ export default function HomeMap() {
   const [onlyAssigned, setOnlyAssigned] = useState(false);
   const [debugMsg, setDebugMsg] = useState('');
 
-  // Filtered stores
+  // Filtered stores for rendering
   const filteredStores = useMemo(() => {
     const feats = storesGeo.features.filter((f) => {
       const p = f.properties;
@@ -45,6 +39,7 @@ export default function HomeMap() {
     return { type: 'FeatureCollection', features: feats };
   }, [division, dc, onlyAssigned]);
 
+  // DC dropdown options based on current division
   const dcOptions = useMemo(() => {
     const set = new Set();
     storesGeo.features.forEach((f) => {
@@ -56,45 +51,30 @@ export default function HomeMap() {
     return ['ALL', ...Array.from(set).sort()];
   }, [division]);
 
-  // init map (only once)
+  // ---- Init map (once) ----
   useEffect(() => {
     if (mapRef.current) return;
-
-    if (!mapboxgl.accessToken) {
-      setDebugMsg('Missing REACT_APP_MAPBOX_TOKEN');
-      return;
-    }
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-96.9, 38.5],
+      center: US_CENTER,
       zoom: 3.3,
       attributionControl: false
     });
 
-    // shrink “blank after reload” cases
+    mapRef.current = map;
+
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(containerRef.current);
 
-    mapRef.current = map;
-
-    // show any style/token errors directly on screen
     map.on('error', (e) => {
       if (e?.error?.message) setDebugMsg(e.error.message);
     });
 
-    // Wait for the style ONCE, then wire everything
     map.once('style.load', () => {
       try {
-        // lock to mercator + US bounds
-        map.setProjection('mercator');
-        map.setMaxBounds([
-          [US_BOUNDS[0][0] - 3, US_BOUNDS[0][1] - 3],
-          [US_BOUNDS[1][0] + 3, US_BOUNDS[1][1] + 3]
-        ]);
-
-        // sources
+        // Sources
         if (!map.getSource('regions')) {
           map.addSource('regions', { type: 'geojson', data: regionsGeo });
         }
@@ -102,79 +82,23 @@ export default function HomeMap() {
           map.addSource('stores', { type: 'geojson', data: filteredStores });
         }
 
-        // region glow
-        if (!map.getLayer('region-line-glow')) {
-          map.addLayer({
-            id: 'region-line-glow',
-            type: 'line',
-            source: 'regions',
-            paint: { 'line-color': '#2BC4FF', 'line-width': 3, 'line-opacity': 0.25 },
-            layout: { visibility: 'none' }
-          });
-        }
-        if (!map.getLayer('region-line-bright')) {
-          map.addLayer({
-            id: 'region-line-bright',
-            type: 'line',
-            source: 'regions',
-            paint: { 'line-color': '#2BC4FF', 'line-width': 1, 'line-opacity': 0.85 },
-            layout: { visibility: 'none' }
-          });
-        }
+        // Region outline/glow (hidden by default)
+        addLineLayer(map, 'region-line-glow', 'regions', '#2BC4FF', 3, 0.24, 'none');
+        addLineLayer(map, 'region-line-bright', 'regions', '#2BC4FF', 1, 0.85, 'none');
 
-        // stores (glow + core)
-        if (!map.getLayer('stores-glow')) {
-          map.addLayer({
-            id: 'stores-glow',
-            type: 'circle',
-            source: 'stores',
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 3, 6, 10, 9, 14],
-              'circle-color': [
-                'case',
-                ['>=', ['get', 'health'], 80],
-                '#28FFA0',
-                ['>=', ['get', 'health'], 60],
-                '#FF5A4C',
-                '#FF5A72'
-              ],
-              'circle-opacity': 0.28,
-              'circle-blur': 1
-            }
-          });
-        }
-        if (!map.getLayer('stores-core')) {
-          map.addLayer({
-            id: 'stores-core',
-            type: 'circle',
-            source: 'stores',
-            paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 2.2, 8, 7.8],
-              'circle-color': [
-                'case',
-                ['>=', ['get', 'health'], 80],
-                '#28FFA0',
-                ['>=', ['get', 'health'], 60],
-                '#FF5A4C',
-                '#FF5A72'
-              ],
-              'circle-opacity': 1
-            }
-          });
-        }
+        // Store dots (glow + core)
+        addCircleLayer(map, 'stores-glow', 'stores', true);
+        addCircleLayer(map, 'stores-core', 'stores', false);
 
-        // cursor + popup
-        const popup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: [0, -10]
-        });
+        // Pointer + popup
+        const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: [0, -10] });
 
         map.on('mouseenter', 'stores-core', () => (map.getCanvas().style.cursor = 'pointer'));
         map.on('mouseleave', 'stores-core', () => {
           map.getCanvas().style.cursor = '';
           popup.remove();
         });
+
         map.on('mousemove', 'stores-core', (e) => {
           const f = e.features?.[0];
           if (!f) return;
@@ -187,7 +111,7 @@ export default function HomeMap() {
                  <div class="tt-line"><span>Division</span><b>${p.division}</b></div>
                  <div class="tt-line"><span>DC</span><b>${p.dc_id || '-'}</b></div>
                  <div class="tt-line"><span>Health</span>
-                   <b style="color:${healthToColor(+p.health)}">${Math.round(+p.health)}%</b>
+                   <b style="color:${colorForHealth(+p.health)}">${Math.round(+p.health)}%</b>
                  </div>
                </div>`
             )
@@ -200,9 +124,8 @@ export default function HomeMap() {
           navigate(`/store/${f.properties.store_id}`);
         });
 
-        // initial paint
-        const src = map.getSource('stores');
-        if (src) src.setData(filteredStores);
+        // first paint
+        map.getSource('stores').setData(filteredStores);
       } catch (err) {
         setDebugMsg(err?.message || 'Map init failed');
       }
@@ -217,17 +140,19 @@ export default function HomeMap() {
     };
   }, []);
 
-  // update sources + zoom/highlight on filter changes
+  // ---- Update on filter changes (and handle zooming) ----
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
 
+    // Update store data
     const src = map.getSource('stores');
     if (src) src.setData(filteredStores);
 
-    const showRegions = (vis) => {
+    // helper to toggle region outlines
+    const showRegions = (visible) => {
       ['region-line-glow', 'region-line-bright'].forEach((id) => {
-        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
       });
     };
     const setRegionFilter = (exp) => {
@@ -236,35 +161,37 @@ export default function HomeMap() {
       });
     };
 
-    // DC zoom
+    // 1) Zoom to DC = fit to all stores with that dc_id
     if (dc !== 'ALL') {
-      const feat = regionsGeo.features.find(
-        (f) => f.properties.type === 'DC' && f.properties.dc_id === dc
+      const dcStores = storesGeo.features.filter(
+        (f) => f.properties.country === 'USA' && f.properties.dc_id === dc
       );
-      if (feat) {
-        showRegions('visible');
-        setRegionFilter(['==', ['get', 'dc_id'], dc]);
-        flyToFeature(map, feat);
+      if (dcStores.length) {
+        const bounds = new mapboxgl.LngLatBounds();
+        dcStores.forEach((f) => bounds.extend(f.geometry.coordinates));
+        showRegions(false); // focus on stores
+        map.easeTo({ pitch: 25, bearing: 10, duration: 350 });
+        map.fitBounds(bounds, { padding: 100, maxZoom: 7.8, duration: 700 });
         return;
       }
     }
 
-    // Division zoom
+    // 2) Zoom to Division polygon
     if (division !== 'All') {
-      const feat = regionsGeo.features.find(
+      const poly = regionsGeo.features.find(
         (f) => f.properties.type === 'Division' && f.properties.division === division
       );
-      if (feat) {
-        showRegions('visible');
+      if (poly) {
+        showRegions(true);
         setRegionFilter(['==', ['get', 'division'], division]);
-        flyToFeature(map, feat);
+        fitToFeature(map, poly);
         return;
       }
     }
 
-    // Default US view
-    showRegions('none');
-    map.easeTo({ center: [-96.9, 38.5], zoom: 3.3, pitch: 0, bearing: 0, duration: 450 });
+    // 3) Default national view
+    showRegions(false);
+    map.easeTo({ center: US_CENTER, zoom: 3.3, pitch: 0, bearing: 0, duration: 450 });
   }, [division, dc, onlyAssigned, filteredStores]);
 
   return (
@@ -301,7 +228,7 @@ export default function HomeMap() {
 
       <div className="legend">
         <span className="dot green" /> Healthy (80–100)
-        <span className="dot amber" /> Watch (60–79)
+        <span className="dot yellow" /> Watch (60–79)
         <span className="dot red" /> At Risk (&lt;60)
       </div>
 
@@ -310,18 +237,60 @@ export default function HomeMap() {
   );
 }
 
-// -------- helpers --------
-function flyToFeature(map, feature) {
+/* ---------- helpers ---------- */
+function addLineLayer(map, id, source, color, width, opacity, visibility) {
+  if (map.getLayer(id)) return;
+  map.addLayer({
+    id,
+    type: 'line',
+    source,
+    paint: { 'line-color': color, 'line-width': width, 'line-opacity': opacity },
+    layout: { visibility }
+  });
+}
+
+function addCircleLayer(map, id, source, isGlow) {
+  if (map.getLayer(id)) return;
+  map.addLayer({
+    id,
+    type: 'circle',
+    source,
+    paint: isGlow
+      ? {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 3, 6, 10, 9, 14],
+          'circle-color': [
+            'case',
+            ['>=', ['get', 'health'], 80],
+            '#00FFC6',
+            ['>=', ['get', 'health'], 60],
+            '#FFC14D',
+            '#FF2E63'
+          ],
+          'circle-opacity': 0.26,
+          'circle-blur': 1
+        }
+      : {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 2.2, 8, 7.8],
+          'circle-color': [
+            'case',
+            ['>=', ['get', 'health'], 80],
+            '#00FFC6',
+            ['>=', ['get', 'health'], 60],
+            '#FFC14D',
+            '#FF2E63'
+          ],
+          'circle-opacity': 1
+        }
+  });
+}
+
+function fitToFeature(map, feature) {
   const t = feature.geometry.type;
-  if (t === 'Polygon' || t === 'MultiPolygon') {
-    const bounds = new mapboxgl.LngLatBounds();
-    const add = (c) => bounds.extend(c);
-    if (t === 'Polygon') feature.geometry.coordinates[0].forEach(add);
-    else feature.geometry.coordinates.forEach((poly) => poly[0].forEach(add));
-    map.easeTo({ pitch: 30, bearing: 10, duration: 360 });
-    map.fitBounds(bounds, { padding: 60, maxZoom: 6.5, duration: 700 });
-  } else if (t === 'Point') {
-    const [lng, lat] = feature.geometry.coordinates;
-    map.easeTo({ center: [lng, lat], zoom: 7.5, pitch: 25, bearing: 15, duration: 600 });
-  }
+  if (t !== 'Polygon' && t !== 'MultiPolygon') return;
+  const bounds = new mapboxgl.LngLatBounds();
+  const add = (c) => bounds.extend(c);
+  if (t === 'Polygon') feature.geometry.coordinates[0].forEach(add);
+  else feature.geometry.coordinates.forEach((poly) => poly[0].forEach(add));
+  map.easeTo({ pitch: 26, bearing: 8, duration: 360 });
+  map.fitBounds(bounds, { padding: 70, maxZoom: 6.8, duration: 720 });
 }

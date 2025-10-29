@@ -1,83 +1,35 @@
-/* HomeMap.css */
-.home-shell {
-  position: relative;
-  height: 100vh;
-  color: #e9f0ff;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-  background: radial-gradient(1200px 800px at 60% 40%, rgba(33, 160, 255, .06), transparent) #0f1b2b;
-}
+.home-shell{position:relative;height:100vh;color:#e9f0ff;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+.mapbox{position:absolute;top:60px;left:0;right:0;bottom:0;width:100%;}
 
-/* Top bar */
-.home-header {
-  position: absolute;
-  top: 12px;
-  left: 16px;
-  right: 16px;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  letter-spacing: .3px;
-  color: #bcd9ff;
-  text-shadow: 0 1px 0 rgba(0,0,0,.35);
-}
-.pulse-dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: #2bc4ff; box-shadow: 0 0 0 6px rgba(43,196,255,.15);
-}
+/* header */
+.home-header{position:absolute;left:16px;right:16px;top:10px;display:flex;align-items:center;justify-content:space-between;z-index:3}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#2bc4ff;box-shadow:0 0 10px #2bc4ff}
 
-/* Filters card */
-.filters {
-  position: absolute;
-  top: 56px; left: 16px; z-index: 3; width: 420px;
-  background: rgba(10,22,38,.55);
-  border: 1px solid rgba(255,255,255,.08);
-  padding: 12px; border-radius: 14px;
-  backdrop-filter: blur(6px); box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-.filters label { font-size: 12px; opacity: .85; display: block; margin: 6px 0 4px; }
-.filters .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.filters .pills button {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
-  color: #e9f0ff; border-radius: 999px; padding: 6px 10px; font-size: 12px;
-}
-.filters .pills button.is-active { background: #0f2a5f; border-color: rgba(33,160,255,.35); color: #e9f0ff; }
-.filters select {
-  width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-  color: #e9f0ff; border-radius: 10px; padding: 8px 10px;
-}
-.filters .chk { display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: .9; margin-top: 8px; }
+/* filters card */
+.filters{position:absolute;top:70px;left:16px;width:420px;z-index:3;background:rgba(6,20,44,.55);
+  border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;backdrop-filter:blur(6px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+.filters label{display:block;opacity:.85;font-size:12px;margin:6px 0;}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pills button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;}
+.pills button.is-active{background:#0f2a5f;border-color:rgba(33,160,255,.35);color:#e9f0ff;}
+.filters select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:8px 10px;border-radius:10px;color:#e9f0ff;}
+.chk{display:flex;gap:8px;font-size:12px;opacity:.9;margin-top:8px}
 
-/* Map container fills below the header */
-.mapbox {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  top: 52px;
-}
+/* legend */
+.legend{position:absolute;left:16px;bottom:16px;z-index:3;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:8px 12px;display:flex;gap:14px;align-items:center;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;box-shadow:0 0 12px currentColor;}
+.dot.green{color:#28FFA0;background:#28FFA0}
+.dot.orange{color:#FFAB54;background:#FFAB54}
+.dot.red{color:#FF5A72;background:#FF5A72}
 
-/* Legend (neon dots) */
-.legend {
-  position: absolute; bottom: 12px; left: 16px; z-index: 3;
-  background: rgba(10,22,38,.35); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px; padding: 8px 12px; display: flex; gap: 14px; align-items: center;
-  font-size: 12px; color: #bcd9ff;
+/* dark tooltip */
+.mapboxgl-popup.tt .mapboxgl-popup-content{
+  background:#0c1d39;color:#e9f0ff;border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 30px rgba(0,0,0,.45)
 }
-.legend .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; box-shadow: 0 0 0 6px rgba(255,255,255,.06); }
-.legend .green { background:#28FFA0; box-shadow:0 0 0 6px rgba(40,255,160,.12); }
-.legend .amber { background:#FFB54C; box-shadow:0 0 0 6px rgba(255,181,76,.12); }
-.legend .red { background:#FF5A72; box-shadow:0 0 0 6px rgba(255,90,114,.12); }
-
-/* Dark tooltip for Mapbox Popup */
-.mapboxgl-popup.tt-dark .mapboxgl-popup-content {
-  background: rgba(12,21,34,.96);
-  color: #e9f0ff;
-  border: 1px solid rgba(43,196,255,.25);
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 18px 45px rgba(0,0,0,.45), inset 0 0 30px rgba(43,196,255,.08);
-}
-.tt-title { font-weight: 600; margin-bottom: 6px; color: #bcd9ff; }
-.tt-id { font-weight: 700; color: #2bc4ff; margin-right: 8px; }
-.tt-line { display:flex; justify-content:space-between; gap:10px; font-size: 12px; }
+.tt-wrap{min-width:220px}
+.tt-title{display:flex;justify-content:space-between;margin-bottom:6px}
+.tt-id{opacity:.7}
+.tt-line{display:flex;justify-content:space-between;gap:12px;margin:2px 0}

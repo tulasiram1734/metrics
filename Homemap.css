@@ -1,68 +1,64 @@
-.home-shell {
-  position: relative; height: 100vh; color: #e9f0ff;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background: radial-gradient(1200px 600px at 60% 40%, rgba(30,60,120,.25), rgba(8,14,30,1));
-}
-.home-header { position:absolute; top:10px; left:14px; right:16px; z-index:3; display:flex; justify-content:space-between; pointer-events:none; }
-.brand { pointer-events:auto; font-size:14px; font-weight:600; letter-spacing:.3px;
-  background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
-  border-radius:10px; padding:6px 10px; box-shadow:0 6px 26px rgba(0,0,0,.25); }
-.pulse-dot { display:inline-block; width:8px; height:8px; margin-right:8px; border-radius:50%; background:#2bc4ff; box-shadow:0 0 18px #2bc4ff; }
+.home-wrap { position: relative; height: 100vh; background: #071426; }
+.mapbox { position: absolute; inset: 56px 0 0 0; }
 
+/* top bar */
+.topbar {
+  position: absolute; left: 0; right: 0; top: 0; height: 56px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px;
+  background: linear-gradient(180deg,#0a1d36,rgba(10,29,54,0.4));
+  color: #e6efff; font-weight: 600; letter-spacing: .2px;
+  z-index: 3;
+}
+.title-dot { width: 8px; height: 8px; border-radius: 50%; background: #2BC4FF; box-shadow: 0 0 12px #2BC4FF; }
+
+/* filter card */
 .filters {
-  position:absolute; top:66px; left:16px; z-index:3; width:420px;
-  background: rgba(20,26,48,.65); backdrop-filter: blur(6px);
-  border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.35);
+  position: absolute; z-index: 4; top: 72px; left: 20px; width: 360px;
+  padding: 14px 16px; border-radius: 14px;
+  background: rgba(11, 16, 34, .72);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 12px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  color: #dfe9ff;
 }
-.filters label { font-size:12px; opacity:.85; display:block; margin:8px 0 6px; }
-.pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-.pills button {
-  background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
-  color:#e9f0ff; border-radius:999px; padding:6px 12px; font-size:12px;
-}
-.pills button.is-active {
-  background:#0f2a5f; border-color:rgba(43,196,255,.35); color:#9fdfff;
-  box-shadow:0 0 0 2px rgba(43,196,255,.15) inset;
-}
+.filters label { display:block; font-size:.82rem; opacity:.8; margin:6px 0 8px; }
 .filters select {
-  width:100%; background: rgba(255,255,255,.06); color:#e9f0ff;
-  border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:8px 10px;
+  width:100%; background:#0f1b34; color:#e9f2ff; border:1px solid rgba(255,255,255,.08);
+  padding:8px 10px; border-radius:10px; outline:none;
 }
-.chk { display:flex; align-items:center; gap:8px; font-size:12px; opacity:.9; margin-top:8px; }
+.checkbox { display:flex; align-items:center; gap:8px; margin-top:8px; opacity:.9; }
 
-.mapbox { position:absolute; inset:0; z-index:1; }
+.chips { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.chip {
+  padding:6px 10px; font-size:.82rem; border-radius:18px; color:#cbe4ff;
+  background:#0f1b34; border:1px solid rgba(255,255,255,.08);
+}
+.chip--active {
+  color:#0b1228; background:#2BC4FF; border-color:#2BC4FF;
+  box-shadow: 0 0 0 2px rgba(43,196,255,.2), 0 0 18px rgba(43,196,255,.45);
+}
 
-/* Legend with better colors */
+/* legend */
 .legend {
-  position:absolute; left:14px; bottom:12px; z-index:3;
-  background: rgba(20,26,48,.65); border:1px solid rgba(255,255,255,.08);
-  border-radius:12px; padding:6px 10px; display:flex; gap:14px; align-items:center;
-  font-size:12px; backdrop-filter: blur(4px);
+  position: absolute; bottom: 16px; left: 16px; display:flex; gap:16px; align-items:center;
+  color:#dfe9ff; font-size:.82rem; z-index: 3; background: rgba(11,16,34,.55);
+  padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(4px);
 }
-.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
-.dot.green { background:#00FFC6; box-shadow:0 0 12px #00FFC6; }
-.dot.yellow { background:#FFC14D; box-shadow:0 0 12px #FFC14D; }
-.dot.red { background:#FF2E63; box-shadow:0 0 12px #FF2E63; }
+.legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; box-shadow:0 0 10px currentColor; }
+.legend .green { color:#2DFFAA; background:#2DFFAA; }
+.legend .amber { color:#FFD24A; background:#FFD24A; }
+.legend .red { color:#FF5A5C; background:#FF5A5C; }
 
-/* Dark tooltip */
-.mapboxgl-popup { max-width: 280px; z-index: 4; }
-.mapboxgl-popup-content {
-  background: rgba(8,12,26,.92); color:#e9f0ff;
-  border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 12px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.45);
+/* dark tooltip */
+.mapboxgl-popup.tt .mapboxgl-popup-content {
+  background: rgba(13,22,44,.96);
+  color:#e9f2ff; border-radius:12px; padding:10px 12px;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
 }
-.mapboxgl-popup-tip { border-top-color: rgba(8,12,26,.92) !important; }
-.tt { min-width:220px; }
-.tt-title { display:flex; justify-content:space-between; margin-bottom:6px; opacity:.9; font-weight:600; }
-.tt-id { opacity:.7; font-weight:500; }
-.tt-line { display:flex; justify-content:space-between; gap:12px; margin:2px 0; font-size:12px; }
-
-/* Inline debug banner */
-.debug-banner {
-  position: absolute; right: 14px; top: 14px; z-index: 5;
-  background: #2a0e0e; color: #ffdede; border: 1px solid #ff6b6b;
-  border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 40vw;
-  box-shadow: 0 8px 22px rgba(0,0,0,.35);
-}
- 
+.tt-wrap { min-width: 220px; }
+.tt-title { font-weight:700; margin-bottom:6px; opacity:.95; }
+.tt-line { display:flex; justify-content:space-between; gap:12px; margin:2px 0; }
+.tt-line .green{color:#2DFFAA} .tt-line .amber{color:#FFD24A} .tt-line .red{color:#FF5A5C}
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(13,22,44,.96); }

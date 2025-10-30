@@ -1,61 +1,28 @@
-.home {
-  position: relative;
-  height: 100vh;
-  width: 100%;
+.home{
+  position:relative; height:100vh; width:100%;
   background: radial-gradient(1200px 700px at 60% 50%, #0d1b2a 0%, #08121e 55%, #070f1a 100%);
-  color: #cfe8ff;
-  overflow: hidden;
+  color:#cfe8ff; overflow:hidden;
 }
+.topbar{ position:absolute; top:10px; left:16px; z-index:3; display:flex; gap:8px; font-weight:600; }
+.title-dot{ width:8px; height:8px; border-radius:50%; background:#28BCFF; box-shadow:0 0 8px #28BCFF, 0 0 14px rgba(40,188,255,.45); }
 
-/* top bar */
-.topbar {
-  position: absolute;
-  top: 10px;
-  left: 16px;
-  z-index: 2;
-  font-weight: 600;
-  letter-spacing: .2px;
-  color: #cfe8ff;
-  display: flex; align-items: center; gap: 8px;
-}
-.title-dot {
-  display:inline-block; width:8px; height:8px; border-radius:50%; background:#28BCFF;
-  box-shadow: 0 0 8px #28BCFF, 0 0 14px rgba(40,188,255,.45);
-}
-
-/* control panel */
 .panel{
-  position:absolute; z-index:2; top:56px; left:16px;
-  width: 340px; padding:14px 16px; border-radius:12px;
-  background: rgba(13, 20, 35, 0.85);
-  box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.05);
-  backdrop-filter: blur(6px);
+  position:absolute; top:56px; left:16px; z-index:3; width:340px;
+  padding:14px 16px; border-radius:12px; backdrop-filter: blur(6px);
+  background:rgba(13,20,35,.85); box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.05);
 }
 .grp{ margin-bottom:12px; }
 .grp label{ display:block; font-size:12px; opacity:.8; margin-bottom:6px; }
 .chips{ display:flex; gap:8px; flex-wrap:wrap; }
-.chip{
-  border:1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-  color:#e6f3ff;
-  border-radius:16px; padding:6px 10px; font-size:12px; cursor:pointer;
-}
-.chip.is-active{
-  background: rgba(40,188,255,.15);
-  border-color: #28BCFF;
-  box-shadow: 0 0 0 2px rgba(40,188,255,.18) inset, 0 0 12px rgba(40,188,255,.28);
-}
-.grp select{
-  width:100%; height:34px; border-radius:8px;
-  background:#0a1422; color:#e6f3ff; border:1px solid rgba(255,255,255,.12);
-  padding:0 10px; outline:none;
-}
+.chip{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#e6f3ff; border-radius:16px; padding:6px 10px; font-size:12px; cursor:pointer; }
+.chip.is-active{ background:rgba(40,188,255,.15); border-color:#28BCFF; box-shadow:0 0 0 2px rgba(40,188,255,.18) inset, 0 0 12px rgba(40,188,255,.28); }
+.grp select{ width:100%; height:34px; border-radius:8px; background:#0a1422; color:#e6f3ff; border:1px solid rgba(255,255,255,.12); padding:0 10px; outline:none; }
 .chk{ display:flex; align-items:center; gap:8px; font-size:12px; opacity:.9; }
 
-/* Map container */
-.mapbox { position:absolute; inset:0; }
+/* Map canvas always on top of background */
+.mapbox{ position:absolute; inset:0; z-index:1; }
 
-/* Tooltip (dark) */
+/* Tooltip */
 .mapboxgl-popup.tt .mapboxgl-popup-content{
   background: rgba(8, 18, 30, .95);
   border:1px solid rgba(255,255,255,.08);
@@ -69,12 +36,11 @@
 .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
 .dot.green{ background:#22FFAA; box-shadow:0 0 8px #22FFAA; }
 .dot.amber{ background:#FFDF5A; box-shadow:0 0 8px #FFDF5A; }
-.dot.red{   background:#FF5A5C; box-shadow:0 0 8px #FF5A5C; }
+.dot.red{ background:#FF5A5C; box-shadow:0 0 8px #FF5A5C; }
 
 /* Legend */
 .legend{
-  position:absolute; left:16px; bottom:14px; z-index:2;
-  display:flex; gap:18px; align-items:center;
-  font-size:12px; color:#d6e8ff; opacity:.95;
+  position:absolute; left:16px; bottom:14px; z-index:3;
+  display:flex; gap:18px; align-items:center; font-size:12px; color:#d6e8ff; opacity:.95;
 }
 .legend .dot{ margin-right:6px; }

@@ -1,331 +1,409 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+
 import storesGeo from "./data/stores.geo.json";
 import dcsGeo from "./data/dcs.geo.json";
-import regionsGeo from "./data/regions.geo.json"; // US states polygons for a subtle glow
+import regionsGeo from "./data/regions.geo.json"; // USA states polygons (optional, for glow)
+
+import "./styles/HomeMap.css";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
-// ---- Tunables ----
-const USA_BOUNDS = [-125.0, 24.3, -66.5, 49.5];
-const ZOOM_THRESHOLD = 6;            // >= show stores, < show DCs
-const FLY_SPEED = 0.8;
-const FLY_CURVE = 1.4;
-const DC_FIT_PADDING = {top: 60, bottom: 60, left: 80, right: 380}; // space for filter panel
-
-// legend colors (same used in paint expressions)
-const HEALTH = {
-  GOOD: "#2DFFAA",
-  WATCH: "#FFD24A",
-  RISK: "#FF5A5C"
-};
-
+// --- UI constants ---
 const DIVISIONS = ["All", "Northern", "Southern", "Eastern", "Midwestern"];
+const USA_BOUNDS = [
+  [-125.101, 24.396], // SW
+  [-66.934, 49.384],  // NE
+];
 
-// roll-up dc health from stores (avg; change to weighted if you prefer)
-function buildDcRollups(storesFc) {
-  const acc = new Map();
-  for (const f of storesFc.features) {
-    const dc = f.properties.dc_id;
-    const h = Number(f.properties.health ?? 0);
-    if (!acc.has(dc)) acc.set(dc, {sum: 0, n: 0});
-    const o = acc.get(dc);
-    o.sum += h; o.n += 1;
-  }
-  const avg = new Map();
-  for (const [dc, {sum, n}] of acc) avg.set(dc, n ? sum / n : 0);
-  return avg;
+const Z_DC = 4.5;     // DC circles are visible at & below this zoom
+const Z_STORE = 6.0;  // stores are visible at & above this zoom
+
+// colors
+const C_GREEN = "#21FFA4"; // neon green (healthy)
+const C_AMBER = "#FFDF4A"; // neon amber (watch)
+const C_RED = "#FF5A5C";   // neon red (at risk)
+const C_DC_RING = "#2BC4FF"; // division glow
+
+function healthToColor(h) {
+  if (h >= 80) return C_GREEN;
+  if (h >= 60) return C_AMBER;
+  return C_RED;
 }
 
-function healthColorExpr(getProp = ["get", "health"]) {
-  // mapbox expression returning color by health numeric value
-  return [
-    "case",
-    [">=", getProp, 80], HEALTH.GOOD,
-    [">=", getProp, 60], HEALTH.WATCH,
-    HEALTH.RISK
-  ];
+function avg(nums) {
+  if (!nums.length) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-function featureBounds(feature) {
-  if (feature.geometry.type === "Point") {
-    const [lng, lat] = feature.geometry.coordinates;
-    return [[lng, lat], [lng, lat]];
+function computeStoreRollups(storesFC) {
+  // group by dc_id and compute average health
+  const byDc = new Map();
+  for (const f of storesFC.features) {
+    const dc = f?.properties?.dc_id;
+    const h = Number(f?.properties?.health ?? 0);
+    if (!dc) continue;
+    if (!byDc.has(dc)) byDc.set(dc, []);
+    byDc.get(dc).push(h);
   }
-  // polygon/lines: compute bbox
-  const coords = [];
-  const walk = c => Array.isArray(c[0]) ? c.forEach(walk) : coords.push(c);
-  walk(feature.geometry.coordinates);
-  let minLng = 180, minLat = 90, maxLng = -180, maxLat = -90;
-  coords.forEach(([lng, lat]) => {
-    minLng = Math.min(minLng, lng);
-    minLat = Math.min(minLat, lat);
-    maxLng = Math.max(maxLng, lng);
-    maxLat = Math.max(maxLat, lat);
+  const rollup = new Map();
+  byDc.forEach((arr, dc) => rollup.set(dc, +avg(arr).toFixed(1)));
+  return rollup;
+}
+
+function filterFC(fc, predicate) {
+  return {
+    type: "FeatureCollection",
+    features: fc.features.filter(predicate),
+  };
+}
+
+function fcBounds(fc) {
+  const b = new mapboxgl.LngLatBounds();
+  fc.features.forEach((f) => {
+    const g = f.geometry;
+    if (!g) return;
+    if (g.type === "Point") {
+      b.extend(g.coordinates);
+    } else if (g.type === "MultiPoint") {
+      g.coordinates.forEach((c) => b.extend(c));
+    } else if (g.type === "Polygon") {
+      g.coordinates.flat().forEach((c) => b.extend(c));
+    } else if (g.type === "MultiPolygon") {
+      g.coordinates.flat(2).forEach((c) => b.extend(c));
+    }
   });
-  return [[minLng, minLat], [maxLng, maxLat]];
+  return b;
 }
 
 export default function HomeMap() {
-  const containerRef = useRef(null);
   const mapRef = useRef(null);
+  const containerRef = useRef(null);
 
   const [division, setDivision] = useState("All");
   const [dcId, setDcId] = useState("ALL");
-  const [onlyAssigned, setOnlyAssigned] = useState(false); // wire up when you have auth
+  const [onlyAssigned, setOnlyAssigned] = useState(false);
 
-  // cache rollups
-  const dcHealth = useMemo(() => buildDcRollups(storesGeo), []);
-  // enrich DC features with roll-up health & division fallback
-  const dcsEnriched = useMemo(() => ({
-    type: "FeatureCollection",
-    features: dcsGeo.features.map(f => ({
-      ...f,
-      properties: {
-        ...f.properties,
-        rollup_health: dcHealth.get(f.properties.dc_id) ?? 0
-      }
-    }))
-  }), [dcHealth]);
+  // ---- data views (reactive to filters) ----
+  const rollups = useMemo(() => computeStoreRollups(storesGeo), []);
 
-  // filtered sets (by division/assigned)
-  const filteredDcs = useMemo(() => ({
-    type: "FeatureCollection",
-    features: dcsEnriched.features.filter(f => {
-      if (division !== "All" && f.properties.division !== division) return false;
-      if (onlyAssigned && !f.properties.assigned) return false;
-      return true;
-    })
-  }), [dcsEnriched, division, onlyAssigned]);
+  // DCs with rollup_health injected (source-of-truth remains your JSON)
+  const dcsWithRollup = useMemo(() => {
+    return {
+      type: "FeatureCollection",
+      features: dcsGeo.features.map((f) => ({
+        ...f,
+        properties: {
+          ...f.properties,
+          rollup_health:
+            f.properties.rollup_health ??
+            rollups.get(f.properties.dc_id) ??
+            0,
+        },
+      })),
+    };
+  }, [rollups]);
 
-  const filteredStores = useMemo(() => ({
-    type: "FeatureCollection",
-    features: storesGeo.features.filter(f => {
-      if (division !== "All" && f.properties.division !== division) return false;
-      if (dcId !== "ALL" && f.properties.dc_id !== dcId) return false;
-      if (onlyAssigned && !f.properties.assigned) return false;
-      return true;
-    })
-  }), [division, dcId, onlyAssigned]);
+  // Filtered DCs by division
+  const filteredDCs = useMemo(() => {
+    return filterFC(dcsWithRollup, (f) =>
+      division === "All" ? true : f.properties.division === division
+    );
+  }, [division, dcsWithRollup]);
 
+  // Filtered stores by division/DC/assignment
+  const filteredStores = useMemo(() => {
+    return filterFC(storesGeo, (f) => {
+      const okDiv = division === "All" || f.properties.division === division;
+      const okDc = dcId === "ALL" || f.properties.dc_id === dcId;
+      const okAssign = !onlyAssigned || !!f.properties.assigned;
+      return okDiv && okDc && okAssign;
+    });
+  }, [division, dcId, onlyAssigned]);
+
+  // options for DC dropdown
+  const dcOptions = useMemo(() => {
+    const s = new Set();
+    filteredDCs.features.forEach((f) => s.add(f.properties.dc_id));
+    return ["ALL", ...Array.from(s).sort()];
+  }, [filteredDCs]);
+
+  // ---- init map once ----
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (mapRef.current || !containerRef.current) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-96.5, 39.8],
-      zoom: 3.3,
-      projection: "mercator",
+      center: [-98.5795, 39.8283], // USA centroid
+      zoom: 3.35,
+      projection: "globe",
       attributionControl: false,
-      maxBounds: USA_BOUNDS
+      dragRotate: false,
+      pitchWithRotate: false,
     });
-    map.addControl(new mapboxgl.AttributionControl({compact: true}));
-    map.addControl(new mapboxgl.NavigationControl({showCompass: false}), "top-right");
     mapRef.current = map;
 
+    map.fitBounds(USA_BOUNDS, { padding: 60, duration: 600 });
+
     map.on("load", () => {
-      // faint state boundaries for the glow effect
-      map.addSource("regions", {type: "geojson", data: regionsGeo});
-      map.addLayer({
-        id: "region-lines",
-        type: "line",
-        source: "regions",
-        paint: {"line-color": "#2BC4FF", "line-opacity": 0.08, "line-width": 1}
+      // --- sources ---
+      if (!map.getSource("regions")) {
+        map.addSource("regions", { type: "geojson", data: regionsGeo });
+      }
+      if (!map.getSource("dcs")) {
+        map.addSource("dcs", { type: "geojson", data: filteredDCs });
+      }
+      if (!map.getSource("stores")) {
+        map.addSource("stores", { type: "geojson", data: filteredStores });
+      }
+
+      // --- division glow (thin neon outline) ---
+      if (!map.getLayer("region-outline")) {
+        map.addLayer({
+          id: "region-outline",
+          type: "line",
+          source: "regions",
+          paint: {
+            "line-color": C_DC_RING,
+            "line-width": 0.6,
+            "line-opacity": 0.15,
+          },
+        });
+      }
+
+      // --- DC circles (rollup view) ---
+      if (!map.getLayer("dcs-core")) {
+        map.addLayer({
+          id: "dcs-core",
+          type: "circle",
+          source: "dcs",
+          paint: {
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3, 6,
+              5, 10,
+              6, 0 // gracefully fade before stores appear
+            ],
+            "circle-color": [
+              "case",
+              [">=", ["get", "rollup_health"], 80], C_GREEN,
+              [">=", ["get", "rollup_health"], 60], C_AMBER,
+              C_RED,
+            ],
+            "circle-opacity": 0.85,
+            "circle-stroke-color": "#0B1220",
+            "circle-stroke-width": 1.2,
+          },
+          minzoom: 0,
+          maxzoom: Z_STORE, // hide when stores show
+        });
+      }
+
+      // --- Store dots (individual health) ---
+      if (!map.getLayer("stores-core")) {
+        map.addLayer({
+          id: "stores-core",
+          type: "circle",
+          source: "stores",
+          paint: {
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              6, 2.5,
+              8, 4.5,
+              10, 7.5,
+              12, 10,
+            ],
+            "circle-color": [
+              "case",
+              [">=", ["get", "health"], 80], C_GREEN,
+              [">=", ["get", "health"], 60], C_AMBER,
+              C_RED,
+            ],
+            "circle-opacity": 0.88,
+            "circle-stroke-color": "#080F1A",
+            "circle-stroke-width": 0.6,
+          },
+          minzoom: Z_STORE,
+        });
+      }
+
+      // pointer cursor
+      map.on("mousemove", (e) => {
+        const feats = map.queryRenderedFeatures(e.point, {
+          layers: ["stores-core", "dcs-core"],
+        });
+        map.getCanvas().style.cursor = feats.length ? "pointer" : "default";
       });
 
-      // DCs source + layer (visible at low zooms)
-      map.addSource("dcs", {type: "geojson", data: filteredDcs});
-      map.addLayer({
-        id: "dcs-circle",
-        type: "circle",
-        source: "dcs",
-        minzoom: 0,
-        maxzoom: 24,
-        paint: {
-          "circle-color": healthColorExpr(["get", "rollup_health"]),
-          "circle-radius": [
-            "interpolate", ["linear"], ["zoom"],
-            3, 5,
-            6, 8,
-            8, 10
-          ],
-          "circle-stroke-color": "#0B1022",
-          "circle-stroke-width": 1.5,
-          "circle-opacity": 0.9
-        }
+      // hover tooltip (stores + DCs)
+      const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        className: "mapbox-popup--dark",
+        offset: [0, 10],
       });
 
-      // Stores source + layer (visible when zoomed in)
-      map.addSource("stores", {type: "geojson", data: filteredStores});
-      map.addLayer({
-        id: "stores-circle",
-        type: "circle",
-        source: "stores",
-        minzoom: ZOOM_THRESHOLD,
-        paint: {
-          "circle-color": healthColorExpr(["get", "health"]),
-          "circle-radius": [
-            "interpolate", ["linear"], ["zoom"],
-            ZOOM_THRESHOLD, 3.5, 9, 6.5, 12, 9
-          ],
-          "circle-stroke-color": "#0B1022",
-          "circle-stroke-width": 0.8,
-          "circle-opacity": 0.92
-        },
-        layout: {"visibility": "none"}
-      });
+      function showTooltip(f, lngLat) {
+        if (!f) return popup.remove();
 
-      // tooltips (dark)
-      const popup = new mapboxgl.Popup({closeButton: false, closeOnClick: false, className: "tt"});
+        const p = f.properties || {};
+        const isStore = !!p.store_id;
 
-      // hover for DC
-      map.on("mousemove", "dcs-circle", e => {
-        map.getCanvas().style.cursor = "pointer";
-        const f = e.features[0];
-        const {dc_id, dc_name, division} = f.properties;
-        const rh = Number(f.properties.rollup_health ?? 0).toFixed(0);
-        popup
-          .setLngLat(e.lngLat)
-          .setHTML(`
-            <div class="tt-wrap">
-              <div class="tt-title">${dc_name}</div>
-              <div class="tt-line"><span>DC ID</span><span>${dc_id}</span></div>
-              <div class="tt-line"><span>Division</span><span>${division}</span></div>
-              <div class="tt-line"><span>Roll-up Health</span><span class="${rh>=80?"green":rh>=60?"amber":"red"}">${rh}</span></div>
+        const html = isStore
+          ? `
+          <div class="tt">
+            <div class="tt-title">
+              <span>${p.store_name ?? p.store_id}</span>
+              <span class="tt-chip ${p.health >= 80 ? "green" : p.health >= 60 ? "amber" : "red"}">
+                ${p.health}
+              </span>
             </div>
-          `)
-          .addTo(map);
-      });
-      map.on("mouseleave", "dcs-circle", () => {
-        map.getCanvas().style.cursor = "";
-        popup.remove();
-      });
+            <div class="tt-line"><span>DC</span><span>${p.dc_id}</span></div>
+            <div class="tt-line"><span>Division</span><span>${p.division}</span></div>
+            <div class="tt-line"><span>Turnover</span><span>${p.turnover ?? "-"}</span></div>
+            <div class="tt-line"><span>Returns</span><span>${p.return_pct != null ? (p.return_pct*100).toFixed(0) + "%" : "-"}</span></div>
+          </div>`
+          : `
+          <div class="tt">
+            <div class="tt-title">
+              <span>${p.dc_name ?? p.dc_id}</span>
+              <span class="tt-chip ${p.rollup_health >= 80 ? "green" : p.rollup_health >= 60 ? "amber" : "red"}">
+                ${p.rollup_health}
+              </span>
+            </div>
+            <div class="tt-line"><span>Division</span><span>${p.division}</span></div>
+            <div class="tt-line"><span>Stores</span><span>${rollups.has(p.dc_id) ? "≈ " + (storesGeo.features.filter(s=>s.properties.dc_id===p.dc_id).length) : "-"}</span></div>
+          </div>`;
 
-      // click DC => zoom + reveal stores for that DC
-      map.on("click", "dcs-circle", e => {
-        if (!e.features?.length) return;
-        const f = e.features[0];
+        popup.setLngLat(lngLat).setHTML(html).addTo(map);
+      }
+
+      map.on("mouseleave", "stores-core", () => popup.remove());
+      map.on("mouseleave", "dcs-core", () => popup.remove());
+
+      map.on("mousemove", "stores-core", (e) =>
+        showTooltip(e.features?.[0], e.lngLat)
+      );
+      map.on("mousemove", "dcs-core", (e) =>
+        showTooltip(e.features?.[0], e.lngLat)
+      );
+
+      // click to zoom / navigate
+      map.on("click", "dcs-core", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
         const id = f.properties.dc_id;
-        setDcId(id);                // updates store filter in React
-        zoomToFeature(map, f);      // fly + glow
-        showStores(map, true);      // reveal layer
+        setDcId(id);
+        zoomToDC(id);
       });
 
-      // hover for store
-      map.on("mousemove", "stores-circle", e => {
-        map.getCanvas().style.cursor = "pointer";
-        const p = e.features[0].properties;
-        const h = Number(p.health ?? 0).toFixed(0);
-        popup
-          .setLngLat(e.lngLat)
-          .setHTML(`
-            <div class="tt-wrap">
-              <div class="tt-title">${p.store_name}</div>
-              <div class="tt-line"><span>Store</span><span>${p.store_id}</span></div>
-              <div class="tt-line"><span>Health</span><span class="${h>=80?"green":h>=60?"amber":"red"}">${h}</span></div>
-              <div class="tt-line"><span>DC</span><span>${p.dc_id}</span></div>
-            </div>
-          `)
-          .addTo(map);
-      });
-      map.on("mouseleave", "stores-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
-
-      // click store => navigate (replace with your router)
-      map.on("click", "stores-circle", e => {
-        const p = e.features[0].properties;
-        window.location.href = `/store/${encodeURIComponent(p.store_id)}`;
-      });
-
-      // watch zoom to toggle visibility if user wheel-zooms
-      map.on("moveend", () => {
-        const z = map.getZoom();
-        showStores(map, z >= ZOOM_THRESHOLD);
+      map.on("click", "stores-core", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        // TODO: hook to your router; for now, simulate navigation:
+        // window.location.href = `/stores/${f.properties.store_id}`;
       });
     });
 
-    return () => { map.remove(); mapRef.current = null; };
+    // cleanup
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // update sources on filter changes
+  // ---- keep sources in sync with filters ----
   useEffect(() => {
-    const map = mapRef.current; if (!map?.isStyleLoaded()) return;
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
 
-    const dcs = map.getSource("dcs"); if (dcs) dcs.setData(filteredDcs);
-    const stores = map.getSource("stores"); if (stores) stores.setData(filteredStores);
+    const dcsSrc = map.getSource("dcs");
+    const storesSrc = map.getSource("stores");
+    if (dcsSrc) dcsSrc.setData(filteredDCs);
+    if (storesSrc) storesSrc.setData(filteredStores);
+  }, [filteredDCs, filteredStores]);
 
-    // when DC filter changes: if "ALL", fit to USA; else fly to that DC
+  // ---- zoom logic: if DC changes, fit to its stores; else fit to USA ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
     if (dcId === "ALL") {
-      flyUSA(map);
-      showStores(map, false);
-    } else {
-      const f = filteredDcs.features.find(ft => ft.properties.dc_id === dcId);
-      if (f) { zoomToFeature(map, f); showStores(map, true); }
+      map.fitBounds(USA_BOUNDS, { padding: 60, duration: 700 });
+      return;
     }
-  }, [filteredDcs, filteredStores, dcId]);
+    zoomToDC(dcId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dcId]);
 
-  // helpers
-  const flyUSA = (map) => {
-    map.fitBounds(USA_BOUNDS, {padding: DC_FIT_PADDING, duration: 700, curve: FLY_CURVE});
-  };
+  function zoomToDC(id) {
+    const map = mapRef.current;
+    if (!map) return;
 
-  const zoomToFeature = (map, feature) => {
-    const [sw, ne] = featureBounds(feature);
-    map.fitBounds([sw, ne], {padding: DC_FIT_PADDING, duration: 700, curve: FLY_CURVE, maxZoom: 8});
-    // subtle “glow” of the state bounds under the DC
-    if (feature.properties?.state) {
-      map.setFilter("region-lines", ["==", ["get", "name"], feature.properties.state]);
-      map.setPaintProperty("region-lines", "line-opacity", 0.28);
-      setTimeout(() => map.setPaintProperty("region-lines", "line-opacity", 0.08), 900);
-    } else {
-      map.setFilter("region-lines", true);
-      map.setPaintProperty("region-lines", "line-opacity", 0.08);
+    const storesOfDc = filterFC(storesGeo, (f) => f.properties.dc_id === id);
+    if (!storesOfDc.features.length) return;
+
+    const b = fcBounds(storesOfDc);
+    if (!b.isEmpty()) {
+      map.fitBounds(b, { padding: { top: 90, right: 60, bottom: 80, left: 320 }, duration: 900 });
+      // a little pitch for subtle 3D feel
+      map.easeTo({ pitch: 35, bearing: 8, duration: 900, essential: true });
     }
-  };
-
-  const showStores = (map, show) => {
-    map.setLayoutProperty("stores-circle", "visibility", show ? "visible" : "none");
-    map.setLayoutProperty("dcs-circle", "visibility", show ? "none" : "visible");
-  };
-
-  // build DC dropdown options from the currently filtered DCs
-  const dcOptions = useMemo(() =>
-    ["ALL", ...Array.from(new Set(filteredDcs.features.map(f => f.properties.dc_id)))],
-    [filteredDcs]
-  );
+  }
 
   return (
-    <div className="home-wrap">
+    <div className="home">
       {/* top bar */}
       <div className="topbar">
-        <span className="title-dot" /> <span>Pulse · Inventory Insights</span>
+        <span className="brand-dot" />
+        <span>Pulse · Inventory Insights</span>
       </div>
 
-      {/* filter card */}
+      {/* filters */}
       <div className="filters">
         <label>Division</label>
-        <div className="chips">
-          {DIVISIONS.map(div => (
+        <div className="division-pills">
+          {DIVISIONS.map((d) => (
             <button
-              key={div}
-              className={division === div ? "chip chip--active" : "chip"}
-              onClick={() => { setDivision(div); setDcId("ALL"); }}
-            >{div}</button>
+              key={d}
+              className={`pill ${division === d ? "is-active" : ""}`}
+              onClick={() => {
+                setDivision(d);
+                setDcId("ALL");
+              }}
+            >
+              {d}
+            </button>
           ))}
         </div>
 
         <label>Distribution Center</label>
-        <select value={dcId} onChange={e => setDcId(e.target.value)}>
-          {dcOptions.map(id => (
-            <option key={id} value={id}>{id}</option>
+        <select
+          value={dcId}
+          onChange={(e) => setDcId(e.target.value)}
+          className="dc-select"
+        >
+          {dcOptions.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
           ))}
         </select>
 
-        <label className="checkbox">
+        <label className="chk">
           <input
             type="checkbox"
             checked={onlyAssigned}
-            onChange={e => setOnlyAssigned(e.target.checked)}
+            onChange={(e) => setOnlyAssigned(e.target.checked)}
           />
           <span>Show only my assigned stores</span>
         </label>
@@ -336,9 +414,12 @@ export default function HomeMap() {
 
       {/* legend */}
       <div className="legend">
-        <span className="dot green" /> <span>Healthy (≥80)</span>
-        <span className="dot amber" /> <span>Watch (60–79)</span>
-        <span className="dot red" /> <span>At Risk (&lt;60)</span>
+        <span className="dot green" />
+        <span>Healthy (≥80)</span>
+        <span className="dot amber" />
+        <span>Watch (60–79)</span>
+        <span className="dot red" />
+        <span>At Risk (&lt;60)</span>
       </div>
     </div>
   );

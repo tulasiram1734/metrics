@@ -1,64 +1,167 @@
-.home-wrap { position: relative; height: 100vh; background: #071426; }
-.mapbox { position: absolute; inset: 56px 0 0 0; }
+.home {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 0px);
+  background: radial-gradient(1200px 800px at 50% 30%, #0a223e 0%, #081629 45%, #071220 100%);
+  color: #eaf2ff;
+  overflow: hidden;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
 
-/* top bar */
 .topbar {
-  position: absolute; left: 0; right: 0; top: 0; height: 56px;
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 20px;
-  background: linear-gradient(180deg,#0a1d36,rgba(10,29,54,0.4));
-  color: #e6efff; font-weight: 600; letter-spacing: .2px;
-  z-index: 3;
+  position: absolute;
+  top: 12px;
+  left: 18px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #cfe8ff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
 }
-.title-dot { width: 8px; height: 8px; border-radius: 50%; background: #2BC4FF; box-shadow: 0 0 12px #2BC4FF; }
 
-/* filter card */
+.brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  background: linear-gradient(180deg, #2bc4ff 0%, #197bff 100%);
+  box-shadow: 0 0 10px #2bc4ff66, 0 0 18px #197bff55;
+}
+
+/* Filters card */
 .filters {
-  position: absolute; z-index: 4; top: 72px; left: 20px; width: 360px;
-  padding: 14px 16px; border-radius: 14px;
-  background: rgba(11, 16, 34, .72);
+  position: absolute;
+  top: 56px;
+  left: 22px;
+  z-index: 6;
+  width: 340px;
+  padding: 14px 14px 16px;
+  border-radius: 14px;
+  background: rgba(10,21,35,.72);
+  box-shadow: 0 8px 28px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(6px);
+}
+
+.filters label {
+  font-size: 12px;
+  opacity: .85;
+  margin-top: 8px;
+  display: block;
+}
+
+.division-pills {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.pill {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
   border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 12px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
-  color: #dfe9ff;
+  background: rgba(12,25,44,.6);
+  color: #cfe8ff;
+  cursor: pointer;
+  font-size: 12px;
 }
-.filters label { display:block; font-size:.82rem; opacity:.8; margin:6px 0 8px; }
-.filters select {
-  width:100%; background:#0f1b34; color:#e9f2ff; border:1px solid rgba(255,255,255,.08);
-  padding:8px 10px; border-radius:10px; outline:none;
-}
-.checkbox { display:flex; align-items:center; gap:8px; margin-top:8px; opacity:.9; }
-
-.chips { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
-.chip {
-  padding:6px 10px; font-size:.82rem; border-radius:18px; color:#cbe4ff;
-  background:#0f1b34; border:1px solid rgba(255,255,255,.08);
-}
-.chip--active {
-  color:#0b1228; background:#2BC4FF; border-color:#2BC4FF;
-  box-shadow: 0 0 0 2px rgba(43,196,255,.2), 0 0 18px rgba(43,196,255,.45);
+.pill:hover { border-color: rgba(255,255,255,.18); }
+.pill.is-active {
+  color: #061220;
+  background: #2bc4ff;
+  border-color: #2bc4ff;
+  box-shadow: 0 0 0 3px rgba(43,196,255,.18);
 }
 
-/* legend */
+.dc-select {
+  width: 100%;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(12,25,44,.65);
+  color: #eaf2ff;
+  padding: 0 10px;
+  margin: 6px 0 6px;
+}
+
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .9;
+}
+.chk input { transform: translateY(1px); }
+
+/* Map canvas */
+.mapbox {
+  position: absolute;
+  inset: 0;
+}
+
+/* Legend */
 .legend {
-  position: absolute; bottom: 16px; left: 16px; display:flex; gap:16px; align-items:center;
-  color:#dfe9ff; font-size:.82rem; z-index: 3; background: rgba(11,16,34,.55);
-  padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.08);
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 6;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: #cfe8ff;
+  padding: 8px 10px;
+  background: rgba(9,17,30,.55);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 10px 24px rgba(0,0,0,.35);
   backdrop-filter: blur(4px);
 }
-.legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; box-shadow:0 0 10px currentColor; }
-.legend .green { color:#2DFFAA; background:#2DFFAA; }
-.legend .amber { color:#FFD24A; background:#FFD24A; }
-.legend .red { color:#FF5A5C; background:#FF5A5C; }
 
-/* dark tooltip */
-.mapboxgl-popup.tt .mapboxgl-popup-content {
-  background: rgba(13,22,44,.96);
-  color:#e9f2ff; border-radius:12px; padding:10px 12px;
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+.legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  box-shadow: 0 0 10px currentColor, 0 0 18px currentColor;
 }
-.tt-wrap { min-width: 220px; }
-.tt-title { font-weight:700; margin-bottom:6px; opacity:.95; }
-.tt-line { display:flex; justify-content:space-between; gap:12px; margin:2px 0; }
-.tt-line .green{color:#2DFFAA} .tt-line .amber{color:#FFD24A} .tt-line .red{color:#FF5A5C}
-.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(13,22,44,.96); }
+.legend .green { color: #21FFA4; background: #21FFA4; }
+.legend .amber { color: #FFDF4A; background: #FFDF4A; }
+.legend .red { color: #FF5A5C; background: #FF5A5C; }
+
+/* Dark tooltip (Mapbox popup) */
+.mapboxgl-popup.mapbox-popup--dark {
+  z-index: 8;
+}
+.mapboxgl-popup.mapbox-popup--dark .mapboxgl-popup-content {
+  color: #eaf2ff;
+  background: rgba(10,18,32,.92);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06);
+  padding: 10px 12px;
+}
+
+.tt { min-width: 230px; }
+.tt-title {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 8px; font-weight: 600;
+}
+.tt-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #081220;
+}
+.tt-chip.green { background: #21FFA4; }
+.tt-chip.amber { background: #FFDF4A; }
+.tt-chip.red { background: #FF5A5C; }
+
+.tt-line {
+  display: flex; justify-content: space-between;
+  gap: 10px; margin: 3px 0;
+  opacity: .95; font-size: 12px;
+}

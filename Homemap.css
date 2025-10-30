@@ -1,167 +1,80 @@
 .home {
   position: relative;
+  height: 100vh;
   width: 100%;
-  height: calc(100vh - 0px);
-  background: radial-gradient(1200px 800px at 50% 30%, #0a223e 0%, #081629 45%, #071220 100%);
-  color: #eaf2ff;
+  background: radial-gradient(1200px 700px at 60% 50%, #0d1b2a 0%, #08121e 55%, #070f1a 100%);
+  color: #cfe8ff;
   overflow: hidden;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
+/* top bar */
 .topbar {
   position: absolute;
-  top: 12px;
-  left: 18px;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  top: 10px;
+  left: 16px;
+  z-index: 2;
   font-weight: 600;
   letter-spacing: .2px;
   color: #cfe8ff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  display: flex; align-items: center; gap: 8px;
+}
+.title-dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%; background:#28BCFF;
+  box-shadow: 0 0 8px #28BCFF, 0 0 14px rgba(40,188,255,.45);
 }
 
-.brand-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
-  background: linear-gradient(180deg, #2bc4ff 0%, #197bff 100%);
-  box-shadow: 0 0 10px #2bc4ff66, 0 0 18px #197bff55;
-}
-
-/* Filters card */
-.filters {
-  position: absolute;
-  top: 56px;
-  left: 22px;
-  z-index: 6;
-  width: 340px;
-  padding: 14px 14px 16px;
-  border-radius: 14px;
-  background: rgba(10,21,35,.72);
-  box-shadow: 0 8px 28px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+/* control panel */
+.panel{
+  position:absolute; z-index:2; top:56px; left:16px;
+  width: 340px; padding:14px 16px; border-radius:12px;
+  background: rgba(13, 20, 35, 0.85);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.05);
   backdrop-filter: blur(6px);
 }
+.grp{ margin-bottom:12px; }
+.grp label{ display:block; font-size:12px; opacity:.8; margin-bottom:6px; }
+.chips{ display:flex; gap:8px; flex-wrap:wrap; }
+.chip{
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color:#e6f3ff;
+  border-radius:16px; padding:6px 10px; font-size:12px; cursor:pointer;
+}
+.chip.is-active{
+  background: rgba(40,188,255,.15);
+  border-color: #28BCFF;
+  box-shadow: 0 0 0 2px rgba(40,188,255,.18) inset, 0 0 12px rgba(40,188,255,.28);
+}
+.grp select{
+  width:100%; height:34px; border-radius:8px;
+  background:#0a1422; color:#e6f3ff; border:1px solid rgba(255,255,255,.12);
+  padding:0 10px; outline:none;
+}
+.chk{ display:flex; align-items:center; gap:8px; font-size:12px; opacity:.9; }
 
-.filters label {
-  font-size: 12px;
-  opacity: .85;
-  margin-top: 8px;
-  display: block;
-}
+/* Map container */
+.mapbox { position:absolute; inset:0; }
 
-.division-pills {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0 10px;
+/* Tooltip (dark) */
+.mapboxgl-popup.tt .mapboxgl-popup-content{
+  background: rgba(8, 18, 30, .95);
+  border:1px solid rgba(255,255,255,.08);
+  color:#e7f3ff; border-radius:10px; padding:10px 12px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(40,188,255,.12) inset;
 }
+.tt-wrap{ min-width:200px; }
+.tt-title{ display:flex; align-items:center; gap:10px; margin-bottom:8px; font-weight:600; }
+.tt-line{ display:flex; justify-content:space-between; gap:20px; margin:3px 0; font-size:12px; opacity:.95; }
 
-.pill {
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(12,25,44,.6);
-  color: #cfe8ff;
-  cursor: pointer;
-  font-size: 12px;
-}
-.pill:hover { border-color: rgba(255,255,255,.18); }
-.pill.is-active {
-  color: #061220;
-  background: #2bc4ff;
-  border-color: #2bc4ff;
-  box-shadow: 0 0 0 3px rgba(43,196,255,.18);
-}
-
-.dc-select {
-  width: 100%;
-  height: 36px;
-  border-radius: 9px;
-  border: 1px solid rgba(255,255,255,.1);
-  background: rgba(12,25,44,.65);
-  color: #eaf2ff;
-  padding: 0 10px;
-  margin: 6px 0 6px;
-}
-
-.chk {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 12px;
-  opacity: .9;
-}
-.chk input { transform: translateY(1px); }
-
-/* Map canvas */
-.mapbox {
-  position: absolute;
-  inset: 0;
-}
+.dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+.dot.green{ background:#22FFAA; box-shadow:0 0 8px #22FFAA; }
+.dot.amber{ background:#FFDF5A; box-shadow:0 0 8px #FFDF5A; }
+.dot.red{   background:#FF5A5C; box-shadow:0 0 8px #FF5A5C; }
 
 /* Legend */
-.legend {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
-  z-index: 6;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  font-size: 12px;
-  color: #cfe8ff;
-  padding: 8px 10px;
-  background: rgba(9,17,30,.55);
-  border-radius: 10px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.07), 0 10px 24px rgba(0,0,0,.35);
-  backdrop-filter: blur(4px);
+.legend{
+  position:absolute; left:16px; bottom:14px; z-index:2;
+  display:flex; gap:18px; align-items:center;
+  font-size:12px; color:#d6e8ff; opacity:.95;
 }
-
-.legend .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 4px;
-  box-shadow: 0 0 10px currentColor, 0 0 18px currentColor;
-}
-.legend .green { color: #21FFA4; background: #21FFA4; }
-.legend .amber { color: #FFDF4A; background: #FFDF4A; }
-.legend .red { color: #FF5A5C; background: #FF5A5C; }
-
-/* Dark tooltip (Mapbox popup) */
-.mapboxgl-popup.mapbox-popup--dark {
-  z-index: 8;
-}
-.mapboxgl-popup.mapbox-popup--dark .mapboxgl-popup-content {
-  color: #eaf2ff;
-  background: rgba(10,18,32,.92);
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06);
-  padding: 10px 12px;
-}
-
-.tt { min-width: 230px; }
-.tt-title {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-bottom: 8px; font-weight: 600;
-}
-.tt-chip {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  color: #081220;
-}
-.tt-chip.green { background: #21FFA4; }
-.tt-chip.amber { background: #FFDF4A; }
-.tt-chip.red { background: #FF5A5C; }
-
-.tt-line {
-  display: flex; justify-content: space-between;
-  gap: 10px; margin: 3px 0;
-  opacity: .95; font-size: 12px;
-}
+.legend .dot{ margin-right:6px; }

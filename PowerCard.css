@@ -1,0 +1,149 @@
+/* container in your left panel */
+.pc-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+}
+
+/* when flipped, turn wrapper into centered overlay (inside panel) */
+.pc-wrapper.expanded {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* dim background; click closes */
+.pc-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0.25;
+  z-index: 0;
+}
+
+/* card body; scale applied via CSS var for smoothness */
+.pc-inner {
+  position: relative;
+  z-index: 1;
+  width: 560px;     /* natural front size */
+  height: 360px;
+  transform-style: preserve-3d;
+  transform: translateZ(0) scale(var(--pc-scale, 1));
+  transition: transform 260ms ease;
+  will-change: transform;
+}
+
+/* faces */
+.pc-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  backface-visibility: hidden;
+  background: radial-gradient(120% 120% at 20% 10%, rgba(40,70,140,.5), rgba(9,22,43,.9));
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+
+/* front content look consistent with your current UI */
+.pc-front .pc-head {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px 8px;
+  color: #def2ff;
+  font-weight: 700;
+}
+.pc-brand { height: 24px; filter: drop-shadow(0 0 6px rgba(0,0,0,.35)); }
+.pc-title { text-align: center; font-size: 20px; letter-spacing: 0.3px; margin: 0; }
+
+.pc-chiprow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 6px 18px 10px;
+}
+.pc-chip {
+  background: rgba(18,28,49,.85);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #d9e8ff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.pc-chip--green { background: rgba(10,40,22,.9); border-color: rgba(143,255,162,.18); }
+.pc-chip_label { font-size: 12px; opacity: .75; display: block; }
+.pc-chip_value { font-size: 16px; font-weight: 700; display: block; }
+
+.pc-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 6px 18px 0;
+}
+.pc-tile {
+  background: rgba(18,28,49,.85);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 14px 12px;
+  color: #d9e8ff;
+}
+.pc-tile--orange { background: linear-gradient(180deg, rgba(255,120,44,.14), rgba(18,28,49,.9)); }
+.pc-tile--indigo { background: linear-gradient(180deg, rgba(88,90,255,.12), rgba(18,28,49,.9)); }
+.pc-title_label { font-size: 12px; opacity: .75; display: block; margin-bottom: 4px; }
+.pc-title_value { font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.pc-warn { height: 16px; }
+
+.pc-footnote {
+  text-align: center;
+  font-size: 12px;
+  opacity: .7;
+  padding: 10px 0 6px;
+}
+
+/* back face layout */
+.pc-back { transform: rotateY(180deg); }
+.pc-front { transform: rotateY(0deg); }
+
+.pc-back-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 16px 18px;
+  color: #d9e8ff;
+}
+.pc-back_h { margin: 0 0 6px; font-size: 16px; }
+
+.pc-detail_list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.pc-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+.pc-dot--warn  { background: #FFC857; box-shadow: 0 0 10px #FFC857; }
+.pc-dot--error { background: #FF6263; box-shadow: 0 0 10px #FF6263; }
+.pc-dot--ok    { background: #4DFFBD; box-shadow: 0 0 10px #4DFFBD; }
+
+.pc-radar { margin-top: 8px; }
+.pc-radar_title { font-weight: 700; margin-bottom: 6px; }
+.pc-radar_grid { display: grid; gap: 8px; }
+.pc-radar_row { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; align-items: center; }
+.pc-radar_lbl { font-size: 12px; opacity: .8; }
+.pc-radar_bar { height: 8px; border-radius: 8px; background: rgba(255,255,255,.08); overflow: hidden; }
+.pc-radar_fill { height: 100%; background: linear-gradient(90deg, #2BCAFF, #7AF7C6); }
+
+.pc-badge { margin-top: 8px; display: inline-flex; gap: 6px; align-items: center; }
+.pc-badge_label { opacity: .75; font-size: 12px; }
+.pc-badge_value {
+  padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18); font-weight: 700; font-size: 12px;
+}
+
+/* when expanded, allow big but keep inside panel */
+.pc-wrapper.expanded .pc-inner {
+  max-width: min(92vw, 1100px);
+  max-height: min(80vh, 700px);
+}
+
+/* prevent accidental scrollbars */
+.pc-wrapper, .pc-wrapper * { overscroll-behavior: contain; }

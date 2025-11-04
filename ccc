@@ -1,0 +1,34 @@
+/* Prevent scroll when flipped */
+.no-scroll {
+  overflow: hidden;
+}
+
+/* Dim background when flipped */
+.pc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 14, 28, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 998;
+}
+
+/* Float & enlarge the PowerCard when flipped */
+.pc-wrapper.is-expanded {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 999;
+  width: min(720px, 75vw);
+  height: min(480px, 70vh);
+  transform: translate(-50%, -50%) rotateY(180deg) scale(1.15);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Responsive fallback */
+@media (max-width: 900px) {
+  .pc-wrapper.is-expanded {
+    width: min(640px, 92vw);
+    height: min(440px, 78vh);
+    transform: translate(-50%, -50%) rotateY(180deg) scale(1.05);
+  }
+}

@@ -1,34 +1,51 @@
-/* Prevent scroll when flipped */
-.no-scroll {
-  overflow: hidden;
+/* --- PowerCard: safer flip layout & spacing --- */
+.pc-wrapper { perspective: 1200px; }
+
+.pc-wrapper.flipped {
+  position: relative;
+  z-index: 999;              /* lift above grid */
 }
 
-/* Dim background when flipped */
-.pc-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(6, 14, 28, 0.55);
-  backdrop-filter: blur(3px);
-  z-index: 998;
+.pc-wrapper.flipped .pc-inner {
+  transform: scale(1.08);    /* breathe a bit when flipped */
+  transition: transform 220ms ease;
+  transform-origin: center;
 }
 
-/* Float & enlarge the PowerCard when flipped */
-.pc-wrapper.is-expanded {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  z-index: 999;
-  width: min(720px, 75vw);
-  height: min(480px, 70vh);
-  transform: translate(-50%, -50%) rotateY(180deg) scale(1.15);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+/* Make the back face comfortable and centered */
+.pc-face.pc-back {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 16px;
+  padding: 20px 22px;
+  box-sizing: border-box;
+  width: 88%;
+  min-height: 320px;         /* don’t collapse */
+  margin: 0 auto;            /* center inside its panel */
 }
 
-/* Responsive fallback */
-@media (max-width: 900px) {
-  .pc-wrapper.is-expanded {
-    width: min(640px, 92vw);
-    height: min(440px, 78vh);
-    transform: translate(-50%, -50%) rotateY(180deg) scale(1.05);
-  }
+/* “Details” list area on the back */
+.pc-back .pc-detail-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  line-height: 1.35;
 }
+
+/* Radar container on the back (your <RadarPanel/>) */
+.pc-back .pc-radar {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  background: rgba(20,30,45,0.35);
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* Chips / bullets on back (optional, matches front tone) */
+.pc-dot--warn { color: #FFD060; }
+.pc-dot--error { color: #FF7A7A; }
+.pc-dot--ok    { color: #7DFFE2; }

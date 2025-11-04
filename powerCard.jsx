@@ -1,177 +1,131 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useSpring, animate } from "framer-motion";
-import "../styles/PowerCard3D.css";
-import RadarPanel from "./RadarPanel";
+import React, { useEffect, useState } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import RadarPanel from './RadarPanel';
+import storeMetrics from '../data/mockMetrics';
+import '../styles/PowerCard3D.css';
 
-const PowerCard3D = ({ storeMetrics }) => {
+const PowerCard3D = () => {
   const [flipped, setFlipped] = useState(false);
-  const cardRef = useRef(null);
 
-  // hover tilt (only on front)
-  const tiltX = useSpring(0, { stiffness: 120, damping: 16 });
-  const tiltY = useSpring(0, { stiffness: 120, damping: 16 });
+  // Hover tilt (front face only)
+  const tiltx = useSpring(useMotionValue(0), { stiffness: 120, damping: 16 });
+  const tilty = useSpring(useMotionValue(0), { stiffness: 120, damping: 16 });
 
   const handleMouseMove = (e) => {
-    if (flipped) return;
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    if (flipped) return; // disable tilt when expanded/back is visible
+    const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const px = x / rect.width - 0.5;
-    const py = y / rect.height - 0.5;
+    const midX = rect.width / 2;
+    const midY = rect.height / 2;
     const maxTilt = 6;
-    tiltX.set(py * -maxTilt);
-    tiltY.set(px * maxTilt);
+    tiltx.set(((y - midY) / midY) * -maxTilt);
+    tilty.set(((x - midX) / midX) * maxTilt);
   };
 
   const handleMouseLeave = () => {
-    tiltX.set(0);
-    tiltY.set(0);
+    tiltx.set(0);
+    tilty.set(0);
   };
 
-  // animate Current Holding count-up safely
-  const [displayHolding, setDisplayHolding] = useState("$0");
+  // Count-up animation for Current Holding
+  const parseHoldingToNumber = (str) => {
+    if (!str) return 0;
+    const cleaned = String(str).replace(/[$,]/g, '').trim();
+    const base = parseFloat(cleaned.replace(/[kK]/, '')) || 0;
+    return cleaned.toLowerCase().includes('k') ? base * 1000 : base;
+  };
+
+  const targetHolding = useMotionValue(parseHoldingToNumber(storeMetrics.currentHolding));
+  const [displayHolding, setDisplayHolding] = useState(storeMetrics.currentHolding);
+
   useEffect(() => {
-    if (!storeMetrics?.currentHolding) return;
-
-    const parsed = parseFloat(
-      storeMetrics.currentHolding.replace(/[^0-9.]/g, "")
-    );
-    if (isNaN(parsed)) return;
-
-    const controls = animate(0, parsed, {
-      duration: 1.2,
-      ease: "easeOut",
-      onUpdate: (v) => {
-        setDisplayHolding(
-          v.toLocaleString(undefined, {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 2,
-          })
-        );
-      },
-    });
-
-    return () => controls.stop();
-  }, [storeMetrics?.currentHolding]);
-
-  // Close on ESC
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") setFlipped(false);
+    const animateCount = () => {
+      const value = targetHolding.get();
+      setDisplayHolding(
+        `$${value.toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        })}`
+      );
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    const unsubscribe = targetHolding.on('change', animateCount);
+    return () => unsubscribe();
+  }, [targetHolding]);
+
+  // ✅ Prevent page scroll when flipped
+  useEffect(() => {
+    document.body.classList.toggle('no-scroll', flipped);
+    return () => document.body.classList.remove('no-scroll');
+  }, [flipped]);
 
   return (
     <>
-      {/* Dim overlay when flipped */}
-      <AnimatePresence>
-        {flipped && (
-          <motion.div
-            className="pc-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.25 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={() => setFlipped(false)}
-          />
-        )}
-      </AnimatePresence>
+      {/* ✅ Dim overlay when flipped */}
+      {flipped && <div className="pc-overlay" onClick={() => setFlipped(false)} />}
 
-      <div className={`pc-wrapper ${flipped ? "expanded" : ""}`}>
-        <motion.div
-          ref={cardRef}
-          className={`pc-outer ${flipped ? "flipped" : ""}`}
-          layout
-          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          style={{
-            rotateX: flipped ? 0 : tiltX,
-            rotateY: flipped ? 0 : tiltY,
-            scale: flipped ? 0.95 : 1, // keeps back face fitted
-          }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onClick={() => setFlipped(!flipped)}
-        >
-          {/* FRONT FACE */}
-          <div className="pc-face pc-front" role="presentation">
-            <div className="pc-header">
-              <img className="pc-logo-left" src="/assets/napa.png" alt="NAPA" />
-              <h2 className="pc-title">Store Power Card</h2>
-              <img
-                className="pc-logo-right"
-                src="/assets/gpc_logo.png"
-                alt="GPC"
-              />
-            </div>
-
-            <div className="pc-grid">
-              <div className="pc-chip pc-blue">
-                <span className="pc-chip_label">Good Bet</span>
-                <span className="pc-chip_val">
-                  {storeMetrics?.goodBet || "--"}
-                </span>
-              </div>
-
-              <div className="pc-chip pc-green">
-                <span className="pc-chip_label">Current Holding</span>
-                <span className="pc-chip_val">{displayHolding}</span>
-              </div>
-
-              <div className="pc-chip pc-purple">
-                <span className="pc-chip_label">Best Selling SKU</span>
-                <span className="pc-chip_val">
-                  {storeMetrics?.bestSelling || "--"}
-                </span>
-              </div>
-
-              <div className="pc-chip pc-indigo">
-                <span className="pc-chip_label">Weakest SKU</span>
-                <span className="pc-chip_val">
-                  {storeMetrics?.weakestSku || "--"}
-                </span>
-              </div>
-            </div>
-
-            <div className="pc-foot">* Click for Details</div>
+      <motion.div
+        className={`pc-wrapper ${flipped ? 'flipped is-expanded' : ''}`}
+        style={{
+          rotateX: tiltx,
+          rotateY: tilty,
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => setFlipped((v) => !v)}
+      >
+        {/* FRONT FACE */}
+        <div className="pc-face pc-front">
+          <div className="pc-header">
+            <img className="pc-header_logo" src="/assets/napa.png" alt="NAPA" />
+            <h2 className="pc-title">Store Power Card</h2>
+            <img className="pc-header_logo" src="/assets/gpc_logo.png" alt="GPC" />
           </div>
 
-          {/* BACK FACE */}
-          <div
-            className="pc-face pc-back"
-            role="presentation"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="pc-back_title">Details</h3>
-            <ul className="pc-back_list">
-              <li>
-                <span className="pc-dot pc-dot--warn" /> Overstocked SKUs
-              </li>
-              <li>
-                <span className="pc-dot pc-dot--error" /> Out of Stock (PFS &
-                Safety)
-              </li>
-              <li>
-                <span className="pc-dot pc-dot--ok" /> Store Sales Velocity
-              </li>
-            </ul>
+          <div className="pc-grid">
+            <div className="pc-tile blue">
+              <span className="pc-tile_label">Good Bet</span>
+              <span className="pc-tile_value">{storeMetrics.goodBet}</span>
+            </div>
 
-            <div className="pc-back_chart">
-              <span className="pc-health_label">Store Health</span>
-              <span className="pc-health_badge">
-                {storeMetrics?.store_id || ""}
-              </span>
-              <RadarPanel
-                label="Health"
-                values={storeMetrics?.radar?.values || [20, 40, 60, 80, 100]}
-              />
+            <div className="pc-tile green">
+              <span className="pc-tile_label">Current Holding</span>
+              <span className="pc-tile_value">{displayHolding}</span>
+            </div>
+
+            <div className="pc-tile red">
+              <span className="pc-tile_label">Best Selling SKU</span>
+              <span className="pc-tile_value">{storeMetrics.bestSellingSku}</span>
+            </div>
+
+            <div className="pc-tile purple">
+              <span className="pc-tile_label">Weakest SKU</span>
+              <span className="pc-tile_value">{storeMetrics.weakestSku}</span>
             </div>
           </div>
-        </motion.div>
-      </div>
+
+          <div className="pc-footer">* Click for Details</div>
+        </div>
+
+        {/* BACK FACE */}
+        <div className="pc-face pc-back" onClick={(e) => e.stopPropagation()}>
+          <h3 className="pc-back_title">Store Insights</h3>
+          <ul className="pc-back_list">
+            <li>
+              <strong>Overstocked SKUs:</strong> {storeMetrics.details.overstocked}
+            </li>
+            <li>
+              <strong>Out of Stock SKUs:</strong> {storeMetrics.details.oosHighPts}
+            </li>
+            <li>
+              <strong>Sales Velocity:</strong> {storeMetrics.details.velocity}
+            </li>
+          </ul>
+          <div className="pc-back_radar">
+            <RadarPanel labels={storeMetrics.radar.labels} values={storeMetrics.radar.values} />
+          </div>
+        </div>
+      </motion.div>
     </>
   );
 };

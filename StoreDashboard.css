@@ -1,0 +1,58 @@
+.sd-shell{ padding: 18px 22px; }
+.sd-topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: 14px;
+}
+.sd-back{
+  color:#2BC4FF; text-decoration:none; font-weight:600;
+  background: rgba(43,196,255,.08); padding:6px 10px; border-radius:10px;
+  border:1px solid rgba(43,196,255,.25);
+}
+.sd-title{ font-weight: 800; letter-spacing:.3px; }
+.sd-store{ opacity:.9; }
+
+.sd-grid{
+  display:grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 16px;
+}
+.sd-col{ min-height: 260px; }
+.sd-col-hero{ min-height: 360px; }
+.sd-col-wide{ grid-column: 1 / span 3; min-height: 260px; }
+
+.sd-card{
+  background: rgba(10,14,25,.7);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.04);
+  height: 100%;
+}
+.sd-card-title{ font-weight:700; margin-bottom:6px; }
+.sd-muted{ opacity:.7; }
+
+/* PowerCard stub — remove if you drop in your real component */
+.pcard-stub{
+  background: radial-gradient(1200px 600px at 50% -30%, rgba(43,196,255,.25), transparent 40%),
+              radial-gradient(600px 400px at 110% 10%, rgba(255,120,200,.25), transparent 40%),
+              rgba(10,14,25,.7);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px; padding: 16px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04);
+  height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.pcard-title{ font-weight:800; margin-bottom: 12px; }
+.pcard-grid{
+  display:grid; grid-template-columns: repeat(2, minmax(180px,1fr)); gap:12px; width: min(560px, 100%);
+}
+.pcard-pill{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px; padding: 12px; text-align:center;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .sd-grid{ grid-template-columns: 1fr; }
+  .sd-col-wide{ grid-column: auto; }
+}

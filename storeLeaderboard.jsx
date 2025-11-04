@@ -1,36 +1,37 @@
-import React from "react";
-import "./StoreLeaderboard.css";
+import React from 'react';
+import '../styles/StoreLeaderboard.css';
 
-function medal(i) {
-  return i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
-}
-
-export default function StoreLeaderboard({ ranked = [], me }) {
+export default function StoreLeaderboard({ ranked, me }) {
   const top3 = ranked.slice(0, 3);
   const rest = ranked.slice(3);
 
-  return (
-    <div className="lb-card">
-      <div className="lb-title">Store Leaderboard</div>
+  const chip = (text) => <span className="chip">{text}</span>;
 
-      <div className="lb-podium">
-        {top3.map((s, i) => (
-          <div key={s.store_id} className={`lb-step step-${i + 1} ${me?.store_id === s.store_id ? "is-me" : ""}`}>
-            <div className="lb-medal">{medal(i)}</div>
-            <div className="lb-name" title={s.name}>{s.name}</div>
-            <div className="lb-health">{Math.round(s.health)}</div>
+  return (
+    <div className="sl-root">
+      <div className="panel-title">Store Leaderboard</div>
+
+      <div className="sl-top3">
+        {top3.map((r, i) => (
+          <div key={r.store_id} className={`sl-card ${i === 0 ? 'is-gold' : i === 1 ? 'is-silver' : 'is-bronze'}`}>
+            <div className="sl-rank">{i + 1}</div>
+            <div className="sl-name">{r.name}</div>
+            <div className="sl-health">{Math.round(r.health)}</div>
           </div>
         ))}
       </div>
 
-      <div className="lb-list">
-        {rest.map((s, i) => (
-          <div key={s.store_id} className={`lb-row ${me?.store_id === s.store_id ? "is-me" : ""}`}>
-            <span className="lb-rank">{i + 4}</span>
-            <span className="lb-row-name" title={s.name}>{s.name}</span>
-            <span className="lb-chip">{s.division}</span>
-            <span className="lb-chip">{s.dc_id}</span>
-            <span className="lb-score">{Math.round(s.health)}</span>
+      <div className="sl-list">
+        {rest.map((r, idx) => (
+          <div key={r.store_id} className={`sl-row ${r.store_id === me.store_id ? 'is-me' : ''}`}>
+            <div className="sl-row-rank">{idx + 4}</div>
+            <div className="sl-row-name">
+              {r.name}
+              <div className="sl-sub">
+                {chip(r.division)} {chip(r.dc_id)}
+              </div>
+            </div>
+            <div className="sl-row-health">{Math.round(r.health)}</div>
           </div>
         ))}
       </div>

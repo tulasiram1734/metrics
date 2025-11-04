@@ -7,7 +7,7 @@ const PowerCard3D = ({ storeMetrics }) => {
   const [flipped, setFlipped] = useState(false);
   const cardRef = useRef(null);
 
-  // hover tilt (front only)
+  // hover tilt (only on front)
   const tiltX = useSpring(0, { stiffness: 120, damping: 16 });
   const tiltY = useSpring(0, { stiffness: 120, damping: 16 });
 
@@ -15,10 +15,10 @@ const PowerCard3D = ({ storeMetrics }) => {
     if (flipped) return;
     const rect = cardRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
-    const px = (cx / rect.width) - 0.5;
-    const py = (cy / rect.height) - 0.5;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const px = x / rect.width - 0.5;
+    const py = y / rect.height - 0.5;
     const maxTilt = 6;
     tiltX.set(py * -maxTilt);
     tiltY.set(px * maxTilt);
@@ -29,34 +29,34 @@ const PowerCard3D = ({ storeMetrics }) => {
     tiltY.set(0);
   };
 
-  // animated number for Current Holding
-  const parseMoney = (str) => {
-    if (!str) return 0;
-    const cleaned = String(str).replace(/[\$,]/g, "").trim();
-    const n = parseFloat(cleaned || "0");
-    return isNaN(n) ? 0 : n;
-  };
-
-  const targetHolding = useRef(parseMoney(storeMetrics?.currentHolding));
-  const [displayHolding, setDisplayHolding] = useState(
-    storeMetrics?.currentHolding || "$0"
-  );
-
+  // animate Current Holding count-up safely
+  const [displayHolding, setDisplayHolding] = useState("$0");
   useEffect(() => {
-    const to = Math.max(0, targetHolding.current);
-    const controls = animate(0, to, { duration: 1.2, ease: "easeOut" });
-    controls.subscribe((v) => {
-      setDisplayHolding(
-        v.toLocaleString(undefined, {
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
-        })
-      );
-    });
-    return () => controls.stop();
-  }, []);
+    if (!storeMetrics?.currentHolding) return;
 
-  // close on ESC
+    const parsed = parseFloat(
+      storeMetrics.currentHolding.replace(/[^0-9.]/g, "")
+    );
+    if (isNaN(parsed)) return;
+
+    const controls = animate(0, parsed, {
+      duration: 1.2,
+      ease: "easeOut",
+      onUpdate: (v) => {
+        setDisplayHolding(
+          v.toLocaleString(undefined, {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 2,
+          })
+        );
+      },
+    });
+
+    return () => controls.stop();
+  }, [storeMetrics?.currentHolding]);
+
+  // Close on ESC
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") setFlipped(false);
@@ -67,7 +67,7 @@ const PowerCard3D = ({ storeMetrics }) => {
 
   return (
     <>
-      {/* dim overlay when expanded */}
+      {/* Dim overlay when flipped */}
       <AnimatePresence>
         {flipped && (
           <motion.div
@@ -90,7 +90,7 @@ const PowerCard3D = ({ storeMetrics }) => {
           style={{
             rotateX: flipped ? 0 : tiltX,
             rotateY: flipped ? 0 : tiltY,
-            scale: flipped ? 0.95 : 1, // ✅ keeps flipped view fitted perfectly
+            scale: flipped ? 0.95 : 1, // keeps back face fitted
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
@@ -111,12 +111,14 @@ const PowerCard3D = ({ storeMetrics }) => {
             <div className="pc-grid">
               <div className="pc-chip pc-blue">
                 <span className="pc-chip_label">Good Bet</span>
-                <span className="pc-chip_val">{storeMetrics?.goodBet || "--"}</span>
+                <span className="pc-chip_val">
+                  {storeMetrics?.goodBet || "--"}
+                </span>
               </div>
 
               <div className="pc-chip pc-green">
                 <span className="pc-chip_label">Current Holding</span>
-                <span className="pc-chip_val">${displayHolding}</span>
+                <span className="pc-chip_val">{displayHolding}</span>
               </div>
 
               <div className="pc-chip pc-purple">
@@ -164,7 +166,7 @@ const PowerCard3D = ({ storeMetrics }) => {
               </span>
               <RadarPanel
                 label="Health"
-                values={storeMetrics?.radar?.values || [20, 20, 20, 20, 20]}
+                values={storeMetrics?.radar?.values || [20, 40, 60, 80, 100]}
               />
             </div>
           </div>

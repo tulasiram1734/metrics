@@ -1,84 +1,70 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, animate } from 'framer-motion';
 import '../styles/PowerCard3D.css';
+import RadarPanel from './RadarPanel';
 
-// Props:
-//   storeMetrics = {
-//     goodBet: 'Filters',
-//     currentHolding: '$574.17K',
-//     bestSelling: 'Batteries',
-//     weakestSku: 'Alternator',
-//     replacementHint: '⚠️',
-//     details: { overstocked: 12, oosHighPts: 3, velocity: 'OK' },
-//     radar: { labels: ['Inventory Coverage','Duration Risk','Substitution Risk','Demand Hit','Sales Velocity'], values: [60,40,45,55,70] },
-//     storeBadge: 'ATL-001'
-//   }
-export default function PowerCard3D({ storeMetrics = {} }) {
+const PowerCard3D = ({ storeMetrics }) => {
   const [flipped, setFlipped] = useState(false);
+  const cardRef = useRef(null);
 
-  // ----- tilt on hover (front only) -----
+  // Hover tilt (front-only)
   const tiltX = useSpring(0, { stiffness: 120, damping: 16 });
   const tiltY = useSpring(0, { stiffness: 120, damping: 16 });
 
   const handleMouseMove = (e) => {
-    if (flipped) return; // disable while expanded
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (flipped) return; // do NOT tilt when back is visible
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
-    const px = cx / rect.width - 0.5;
-    const py = cy / rect.height - 0.5;
-    const maxTilt = 8;
-    tiltX.set(py * -maxTilt);
-    tiltY.set(px *  maxTilt);
+    const px = (cx / rect.width) - 0.5;
+    const py = (cy / rect.height) - 0.5;
+    const maxTilt = 6;
+    tiltX.set(py * maxTilt * -1);
+    tiltY.set(px * maxTilt);
   };
-  const handleMouseLeave = () => {
-    if (flipped) return;
-    tiltX.set(0); tiltY.set(0);
-  };
+  const handleMouseLeave = () => { tiltX.set(0); tiltY.set(0); };
 
-  // ----- scale-to-fit when flipped (no clipping) -----
-  const wrapperRef = useRef(null); // panel-area wrapper
-  const cardRef = useRef(null);    // the element we scale
-  const [scale, setScale] = useState(1);
+  // Current holding counter (unchanged behavior)
+  const parseMoney = (str) => {
+    if (!str) return 0;
+    const cleaned = String(str).replace(/[\$,]/g, '').trim();
+    const n = parseFloat(cleaned || '0');
+    return isNaN(n) ? 0 : n;
+  };
+  const targetHolding = useRef(parseMoney(storeMetrics?.currentHolding));
+  const [displayHolding, setDisplayHolding] = useState(storeMetrics?.currentHolding || '$0');
 
   useEffect(() => {
-    if (!flipped) { setScale(1); return; }
-    const wrap = wrapperRef.current;
-    const card = cardRef.current;
-    if (!wrap || !card) return;
+    const to = Math.max(0, targetHolding.current);
+    const controls = animate(0, to, { duration: 1.2, ease: 'easeOut' });
+    const unsub = controls.stop; // keep reference
+    controls.subscribe((v) => {
+      setDisplayHolding(
+        v.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })
+      );
+    });
+    return () => { unsub?.(); };
+  }, []);
 
-    const measure = () => {
-      const w = wrap.getBoundingClientRect();
-      const c = card.getBoundingClientRect();
-      const pad = 24; // margin so shadows don’t clip
-      const availW = Math.max(0, w.width  - pad * 2);
-      const availH = Math.max(0, w.height - pad * 2);
-      const baseW  = Math.max(c.width,  560);
-      const baseH  = Math.max(c.height, 360);
-      const s = Math.min(availW / baseW, availH / baseH, 1);
-      setScale(Number.isFinite(s) ? s : 1);
-    };
-
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(wrap);
-    return () => ro.disconnect();
-  }, [flipped]);
-
-  // close on Escape while flipped
+  // Close on ESC when expanded
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') setFlipped(false); };
-    if (flipped) window.addEventListener('keydown', onKey);
+    const onKey = (e) => { if (flipped && e.key === 'Escape') setFlipped(false); };
+    window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [flipped]);
 
-  // convenience safe getters
-  const m = storeMetrics || {};
-  const radarLabels = (m.radar && m.radar.labels) || [];
-  const radarValues = (m.radar && m.radar.values) || [];
+  // Lock body scroll when flipped
+  useEffect(() => {
+    if (flipped) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [flipped]);
 
   return (
-    <div ref={wrapperRef} className={`pc-wrapper ${flipped ? 'expanded' : ''}`}>
+    <div className="pc-slot"> {/* clamps size to the left panel */}
       <AnimatePresence>
         {flipped && (
           <motion.div
@@ -93,84 +79,66 @@ export default function PowerCard3D({ storeMetrics = {} }) {
 
       <motion.div
         ref={cardRef}
-        className={`pc-inner ${flipped ? 'is-flipped' : ''}`}
+        className={`pc-wrapper ${flipped ? 'expanded' : ''}`}
         style={{
-          rotateX: flipped ? 0 : tiltX,
-          rotateY: flipped ? 0 : tiltY,
-          '--pc-scale': flipped ? scale : 1
+          rotateX: tiltX,
+          rotateY: tiltY,
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); setFlipped(true); }}
       >
-        {/* FRONT FACE (unchanged styling hooks) */}
-        <div className="pc-face pc-front" role="presentation" onClick={() => setFlipped(true)}>
+        {/* FRONT */}
+        <div className="pc-face pc-front" role="presentation">
           <div className="pc-head">
             <img className="pc-brand" src="/assets/napa.png" alt="NAPA" />
-            <h2 className="pc-title">Store Power Card</h2>
-            <img className="pc-brand" src="/assets/gpc_logo.png" alt="GPC" />
+            <span className="pc-title">Store Power Card</span>
+            <img className="pc-brand-right" src="/assets/gpc_logo.png" alt="GPC" />
           </div>
 
-          <div className="pc-chiprow">
-            <div className="pc-chip">
+          <div className="pc-grid">
+            <div className="pc-chip pc-blue">
               <span className="pc-chip_label">Good Bet</span>
-              <span className="pc-chip_value">{m.goodBet || '—'}</span>
+              <span className="pc-chip_val">{storeMetrics?.goodBet || '--'}</span>
             </div>
-            <div className="pc-chip pc-chip--green">
+
+            <div className="pc-chip pc-green">
               <span className="pc-chip_label">Current Holding</span>
-              <span className="pc-chip_value">{m.currentHolding || '$0'}</span>
+              <span className="pc-chip_val">${displayHolding}</span>
+            </div>
+
+            <div className="pc-chip pc-purple">
+              <span className="pc-chip_label">Best Selling SKU</span>
+              <span className="pc-chip_val">{storeMetrics?.bestSelling || '--'}</span>
+            </div>
+
+            <div className="pc-chip pc-indigo">
+              <span className="pc-chip_label">Weakest SKU</span>
+              <span className="pc-chip_val">{storeMetrics?.weakestSku || '--'}</span>
             </div>
           </div>
 
-          <div className="pc-tiles">
-            <div className="pc-tile pc-tile--orange">
-              <span className="pc-title_label">Best Selling SKU</span>
-              <span className="pc-title_value">{m.bestSelling || '—'}</span>
-            </div>
-            <div className="pc-tile pc-tile--indigo">
-              <span className="pc-title_label">Weakest SKU</span>
-              <span className="pc-title_value">
-                {m.weakestSku || '—'}
-                <img className="pc-warn" src="/assets/warning-icon.png" alt="" />
-              </span>
-              <small className="pc-replace">{m.replacementHint || ''}</small>
-            </div>
-          </div>
-
-          <div className="pc-footnote">• Click for Details</div>
+          <div className="pc-foot">* Click for Details</div>
         </div>
 
-        {/* BACK FACE (unchanged layout hooks; just ensure it fits) */}
+        {/* BACK – keep same size, scrollable if needed */}
         <div className="pc-face pc-back" role="presentation" onClick={(e) => e.stopPropagation()}>
-          <div className="pc-back-content">
-            <h3 className="pc-back_h">Details</h3>
-            <ul className="pc-detail_list">
-              <li><span className="pc-dot pc-dot--warn" /> Overstocked SKUs <strong>{m.details?.overstocked ?? 0}</strong></li>
-              <li><span className="pc-dot pc-dot--error" /> Out of Stock (PTS & Safety) <strong>{m.details?.oosHighPts ?? 0}</strong></li>
-              <li><span className="pc-dot pc-dot--ok" /> Store Sales Velocity <strong>{m.details?.velocity || '—'}</strong></li>
-            </ul>
+          <h3 className="pc-back_title">Details</h3>
+          <ul className="pc-back_list">
+            <li><span className="pc-dot pc-dot--warn" /> Overstocked SKUs</li>
+            <li><span className="pc-dot pc-dot--error" /> Out of Stock (PFS & Safety) SKUs</li>
+            <li><span className="pc-dot pc-dot--ok" /> Store Sales Velocity</li>
+          </ul>
 
-            {/* simple inline radar placeholder (keep your existing RadarPanel if you have it) */}
-            <div className="pc-radar">
-              <div className="pc-radar_title">Store Health</div>
-              <div className="pc-radar_grid">
-                {radarLabels.map((lbl, i) => (
-                  <div key={lbl} className="pc-radar_row">
-                    <span className="pc-radar_lbl">{lbl}</span>
-                    <div className="pc-radar_bar">
-                      <div className="pc-radar_fill" style={{ width: `${Math.max(0, Math.min(100, radarValues[i] || 0))}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="pc-badge">
-                <span className="pc-badge_label">Store</span>
-                <span className="pc-badge_value">{m.storeBadge || ''}</span>
-              </div>
-            </div>
+          <div className="pc-back_chart">
+            <span className="pc-health_label">Store Health</span>
+            <span className="pc-health_badge">{storeMetrics?.store_id || ''}</span>
+            <RadarPanel label="Health" values={storeMetrics?.radar?.values || [20,20,20,20,20]} />
           </div>
         </div>
       </motion.div>
     </div>
   );
-}
+};
+
+export default PowerCard3D;

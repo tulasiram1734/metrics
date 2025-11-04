@@ -1,5 +1,4 @@
-.home{
-  position:relative; height:100vh; width:100%;
+.home{ position:relative; height:100vh; width:100%;
   background: radial-gradient(1200px 700px at 60% 50%, #0d1b2a 0%, #08121e 55%, #070f1a 100%);
   color:#cfe8ff; overflow:hidden;
 }
@@ -19,7 +18,6 @@
 .grp select{ width:100%; height:34px; border-radius:8px; background:#0a1422; color:#e6f3ff; border:1px solid rgba(255,255,255,.12); padding:0 10px; outline:none; }
 .chk{ display:flex; align-items:center; gap:8px; font-size:12px; opacity:.9; }
 
-/* Map canvas always on top of background */
 .mapbox{ position:absolute; inset:0; z-index:1; }
 
 /* Tooltip */
@@ -29,7 +27,6 @@
   color:#e7f3ff; border-radius:10px; padding:10px 12px;
   box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(40,188,255,.12) inset;
 }
-.tt-wrap{ min-width:200px; }
 .tt-title{ display:flex; align-items:center; gap:10px; margin-bottom:8px; font-weight:600; }
 .tt-line{ display:flex; justify-content:space-between; gap:20px; margin:3px 0; font-size:12px; opacity:.95; }
 

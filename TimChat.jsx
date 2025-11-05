@@ -1,46 +1,35 @@
 import React, { useState } from 'react';
-import './TimChat.css';
 
-export default function TimChat({ storeId }) {
-  const [msgs, setMsgs] = useState([
-    { role: 'ai', text: `Hi, I’m Tim 🤖 — Pulse AI. Ask me about ${storeId}, peers, or DC rollups.` }
-  ]);
-  const [text, setText] = useState('');
+export default function TimChat() {
+  const [q, setQ] = useState('');
 
-  const send = (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    const q = text.trim();
-    setMsgs(m => [...m, { role: 'user', text: q }]);
-    setText('');
-
-    // Mocked reply (replace later with your real backend)
-    setTimeout(() => {
-      const mock = q.toLowerCase().includes('health')
-        ? 'Store health is 66. Peer avg 70, DC avg 73, National 76.'
-        : 'I can answer health, inventory coverage, velocity, and returns. Try: "What is my L1 Batteries score vs DC?"';
-      setMsgs(m => [...m, { role: 'ai', text: mock }]);
-    }, 350);
+  const askTim = () => {
+    // TODO: wire up to your backend/LLM call
+    if (!q.trim()) return;
+    console.log('[TimChat] Ask:', q);
+    setQ('');
   };
 
   return (
-    <div className="panel panel--chat">
-      <div className="chat-header">PulseAI — Tim</div>
-      <div className="chat-body">
-        {msgs.map((m, i) => (
-          <div key={i} className={`msg ${m.role}`}>
-            <span className="bubble">{m.text}</span>
-          </div>
-        ))}
+    <>
+      <div className="ai-header">
+        <span>PulseAI — Tim</span>
       </div>
-      <form className="chat-input" onSubmit={send}>
+
+      <div className="ai-intro">
+        Hi, I’m Tim 🤖 — Pulse AI. Ask me about this store, its peers, or DC rollups.
+      </div>
+
+      <div className="ai-input-row">
         <input
-          value={text}
-          onChange={e => setText(e.target.value)}
+          className="ai-input"
           placeholder="Ask Tim about this store…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' ? askTim() : null}
         />
-        <button type="submit">Ask</button>
-      </form>
-    </div>
+        <button className="ai-ask-btn" onClick={askTim}>Ask</button>
+      </div>
+    </>
   );
 }

@@ -1,18 +1,28 @@
-/* keep original size; only scale+center when flipped */
-.pc-wrapper.expanded {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(1.14); /* enlarge without changing aspect */
-  z-index: 9;
+/* allow the base card to keep its own size */
+.pc-wrapper { flex: 0 0 auto; }
+
+/* ===== overlay/backdrop when flipped ===== */
+.pc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 12, 24, 0.42);
+  backdrop-filter: blur(2px);
+  z-index: 9990;           /* below the card, above everything else */
   pointer-events: auto;
 }
 
-/* make sure the card isn't stretched by any parent flex */
-.pc-wrapper { flex: 0 0 auto; }
+/* ===== flipped/expanded card ===== */
+.pc-wrapper.expanded {
+  position: fixed;         /* escape panel; overlay the whole page */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.16); /* enlarge without changing aspect */
+  z-index: 10000;          /* above the backdrop and page UI */
+  pointer-events: auto;
+}
 
-/* preserve 3D + tidy front/back while flipped (unchanged) */
+/* keep 3D and flip visuals */
 .pc-rotor, .pc-face { transform-style: preserve-3d; }
 .pc-face { backface-visibility: hidden; }
 .pc-rotor.flipped .pc-back { transform: rotateY(180deg) scale(1.02); }
-.pc-rotor.flipped .pc-front { opacity: .06; filter: blur(.2px); pointer-events: none; }
+.pc-rotor.flipped .pc-front { opacity: .06; filter: blur(.4px); pointer-events: none; }

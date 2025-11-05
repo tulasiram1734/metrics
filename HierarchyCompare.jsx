@@ -1,29 +1,31 @@
 import React, { useMemo, useState } from 'react';
-import '../styles/HierarchyCompare.css';
 
-export default function HierarchyCompare({ categories, levels, hierarchy, me }) {
+/**
+ * Replace the sample data/logic with your real values.
+ * This component only changes structure/classes for alignment.
+ */
+export default function HierarchyCompare({
+  // Optional props if you already compute these outside:
+  bars: incomingBars,
+  categories = ['Batteries', 'Filters', 'Brakes'],
+  levels = ['L1 Family', 'L2 Category', 'L3 Sub-Category', 'L4 Segment', 'L5 SKU'],
+}) {
   const [cat, setCat] = useState(categories[0]);
   const [lvl, setLvl] = useState(levels[0]);
 
-  const rollup = useMemo(() => hierarchy[cat][lvl], [hierarchy, cat, lvl]);
+  // Demo bars (replace with your invested amount / sales / turnover outputs)
+  const demoBars = useMemo(() => ([
+    { label: 'This Store', value: 66 },
+    { label: 'Peer Avg',   value: 70 },
+    { label: 'DC Avg',     value: 73 },
+    { label: 'National',   value: 76 },
+  ]), []);
 
-  const Bar = ({ label, value }) => (
-    <div className="hc-bar">
-      <div className="hc-bar-header">
-        <span>{label}</span>
-        <b>{Math.round(value)}</b>
-      </div>
-      <div className="hc-bar-track">
-        <div className="hc-bar-fill" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
-      </div>
-    </div>
-  );
+  const bars = incomingBars?.length ? incomingBars : demoBars;
 
   return (
-    <div className="hc-root">
-      <div className="panel-title">Hierarchy Comparison</div>
-
-      <div className="hc-controls">
+    <>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <select value={cat} onChange={(e) => setCat(e.target.value)}>
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -33,11 +35,21 @@ export default function HierarchyCompare({ categories, levels, hierarchy, me }) 
       </div>
 
       <div className="hc-bars">
-        <Bar label={`${me.name}`} value={rollup.store} />
-        <Bar label="Peer Avg" value={rollup.peers} />
-        <Bar label="DC Avg" value={rollup.dc} />
-        <Bar label="National" value={rollup.national} />
+        {bars.map((b) => (
+          <div key={b.label} className="hc-row">
+            <span>{b.label}</span>
+            <div
+              className="bar"
+              style={{
+                height: 8,
+                width: `${Math.max(0, Math.min(100, b.value))}%`,
+                background: 'linear-gradient(90deg,#1ee3b3,#27b2ff)',
+                borderRadius: 6
+              }}
+            />
+          </div>
+        ))}
       </div>
-    </div>
+    </>
   );
 }

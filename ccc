@@ -1,26 +1,18 @@
-/* Smooth centering when flipped */
-.pc-wrapper { transition: transform .35s ease, left .35s ease, top .35s ease; }
-
-/* Center the card in the left panel while flipped/expanded */
+/* keep original size; only scale+center when flipped */
 .pc-wrapper.expanded {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);    /* perfect centering */
-  width: min(68vw, 620px);             /* grow, but not too huge */
-  z-index: 9;                          /* above radar/panel */
+  transform: translate(-50%, -50%) scale(1.14); /* enlarge without changing aspect */
+  z-index: 9;
   pointer-events: auto;
 }
 
-/* Keep 3D & breathing room you already liked */
+/* make sure the card isn't stretched by any parent flex */
+.pc-wrapper { flex: 0 0 auto; }
+
+/* preserve 3D + tidy front/back while flipped (unchanged) */
 .pc-rotor, .pc-face { transform-style: preserve-3d; }
 .pc-face { backface-visibility: hidden; }
-.pc-rotor.flipped .pc-back {
-  transform: rotateY(180deg) scale(1.08);
-  transform-origin: 50% 10%;
-}
+.pc-rotor.flipped .pc-back { transform: rotateY(180deg) scale(1.02); }
 .pc-rotor.flipped .pc-front { opacity: .06; filter: blur(.2px); pointer-events: none; }
-.pc-back__content { padding: 10px 12px; gap: 12px; }
-
-/* In case radar has a higher z-index */
-.radar-panel { z-index: 1; }

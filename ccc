@@ -1,51 +1,26 @@
-/* --- PowerCard: safer flip layout & spacing --- */
-.pc-wrapper { perspective: 1200px; }
+/* Smooth centering when flipped */
+.pc-wrapper { transition: transform .35s ease, left .35s ease, top .35s ease; }
 
-.pc-wrapper.flipped {
-  position: relative;
-  z-index: 999;              /* lift above grid */
+/* Center the card in the left panel while flipped/expanded */
+.pc-wrapper.expanded {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);    /* perfect centering */
+  width: min(68vw, 620px);             /* grow, but not too huge */
+  z-index: 9;                          /* above radar/panel */
+  pointer-events: auto;
 }
 
-.pc-wrapper.flipped .pc-inner {
-  transform: scale(1.08);    /* breathe a bit when flipped */
-  transition: transform 220ms ease;
-  transform-origin: center;
+/* Keep 3D & breathing room you already liked */
+.pc-rotor, .pc-face { transform-style: preserve-3d; }
+.pc-face { backface-visibility: hidden; }
+.pc-rotor.flipped .pc-back {
+  transform: rotateY(180deg) scale(1.08);
+  transform-origin: 50% 10%;
 }
+.pc-rotor.flipped .pc-front { opacity: .06; filter: blur(.2px); pointer-events: none; }
+.pc-back__content { padding: 10px 12px; gap: 12px; }
 
-/* Make the back face comfortable and centered */
-.pc-face.pc-back {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  gap: 16px;
-  padding: 20px 22px;
-  box-sizing: border-box;
-  width: 88%;
-  min-height: 320px;         /* don’t collapse */
-  margin: 0 auto;            /* center inside its panel */
-}
-
-/* “Details” list area on the back */
-.pc-back .pc-detail-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  line-height: 1.35;
-}
-
-/* Radar container on the back (your <RadarPanel/>) */
-.pc-back .pc-radar {
-  width: 100%;
-  min-height: 180px;
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
-  background: rgba(20,30,45,0.35);
-  padding: 10px;
-  box-sizing: border-box;
-}
-
-/* Chips / bullets on back (optional, matches front tone) */
-.pc-dot--warn { color: #FFD060; }
-.pc-dot--error { color: #FF7A7A; }
-.pc-dot--ok    { color: #7DFFE2; }
+/* In case radar has a higher z-index */
+.radar-panel { z-index: 1; }
